@@ -256,7 +256,7 @@ body.light .hint,body.light .credits{opacity:0}
 
 <div class="heroui" id="heroui">
   <h1>Кого не находят — <span class="cold">того не выбирают</span></h1>
-  <p>Клиент ищет в Google и спрашивает AI.<br>Нет тебя — выбирают другого.</p>
+  <p>Твой клиент уже спрашивает AI —<br>и выбирает из его ответа.</p>
   <div class="deadline">цель ЕС · до 2030 · весь бизнес в цифре</div>
 </div>
 
@@ -302,7 +302,7 @@ body.light .hint,body.light .credits{opacity:0}
         <div class="card">
           <div class="step">этап 01 · найти</div>
           <h3>Тебя находят</h3>
-          <p>Google, карты, AI-поиск — везде, где твой клиент спрашивает,
+          <p>Карты, каталоги, AI-поиск — везде, где твой клиент спрашивает,
              появляется твой бизнес. Не только реклама — присутствие.</p>
           <div class="tags"><span class="tag">Google Business</span><span class="tag">сайт</span>
             <span class="tag">AI-поиск</span><span class="tag">карты</span><span class="tag">отзывы</span>
@@ -465,7 +465,8 @@ body.light .hint,body.light .credits{opacity:0}
   // не абстрактные полоски, а «конкурент №N» + «★ 4,8 · 213 отзывов»
   function foundCard(x,y,appear,pulse,i){
     if(appear<=0.01)return;
-    const w=WIDE?172:154, h=44, r=10;
+    const w=WIDE?172:130, h=WIDE?44:40, r=10;
+    x=clamp(x, w/2+8, W-w/2-8);          // карточка всегда целиком в экране
     const gx=x-w/2, gy=y-h/2;
     const gl=0.5+0.5*Math.sin(pulse*TAU);
     orb(x,y,w*0.6,COL.accent,0.12*appear*(0.6+gl*0.4));
@@ -479,16 +480,16 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.fillStyle=rgba(COL.accent,0.9*appear);ctx.beginPath();ctx.arc(cxd,cyd,7.5,0,TAU);ctx.fill();
     ctx.strokeStyle=rgba([255,255,255],0.95*appear);ctx.lineWidth=1.7;ctx.lineCap="round";
     ctx.beginPath();ctx.moveTo(cxd-3,cyd);ctx.lineTo(cxd-0.6,cyd+2.6);ctx.lineTo(cxd+3.2,cyd-2.8);ctx.stroke();
-    // plain-language lines
+    // plain-language lines (минимализм на мобиле: без слова «отзывов»)
     const rating=(4.6+((i*7)%4)*0.1).toFixed(1).replace(".",",");
     const reviews=87+i*61;
     ctx.textAlign="left";
-    ctx.font="600 12px Public Sans, sans-serif";
+    ctx.font=(WIDE?"600 12px":"600 11px")+" Public Sans, sans-serif";
     ctx.fillStyle=rgba([233,236,241],0.92*appear);
-    ctx.fillText("конкурент №"+(i+1), gx+32, gy+19);
-    ctx.font="500 10px IBM Plex Mono, monospace";
+    ctx.fillText("конкурент №"+(i+1), gx+32, gy+(WIDE?19:17));
+    ctx.font=(WIDE?"500 10px":"500 9.5px")+" IBM Plex Mono, monospace";
     ctx.fillStyle=rgba(COL.ice,0.75*appear);
-    ctx.fillText("★ "+rating+" · "+reviews+" отзывов", gx+32, gy+34);
+    ctx.fillText("★ "+rating+(WIDE?" · "+reviews+" отзывов":" · "+reviews), gx+32, gy+(WIDE?34:31));
     ctx.textAlign="center";
     ctx.globalCompositeOperation="lighter";
   }
@@ -507,14 +508,15 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.lineWidth=1.7;
     ctx.strokeStyle=rgba(lit>0.5?COL.accent:COL.dead,(lit>0.5?0.95:0.55)*appear);
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.stroke();ctx.setLineDash([]);
-    // storefront symbol inside
+    // map-pin symbol inside — «твоё место в среде» (домик забракован)
     const base=lit>0.5?COL.ice:COL.dead;
-    const k=rr*0.075, sx=x, sy=y+rr*0.06;
-    ctx.strokeStyle=rgba(base,0.95*appear);ctx.lineWidth=1.6;ctx.lineCap="round";ctx.lineJoin="round";
-    ctx.beginPath();ctx.moveTo(sx-6*k,sy-1*k);ctx.lineTo(sx-6*k,sy+7*k);ctx.lineTo(sx+6*k,sy+7*k);ctx.lineTo(sx+6*k,sy-1*k);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(sx-8*k,sy-1*k);ctx.lineTo(sx-6.5*k,sy-6.5*k);ctx.lineTo(sx+6.5*k,sy-6.5*k);ctx.lineTo(sx+8*k,sy-1*k);ctx.closePath();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(sx-2.7*k,sy-6.5*k);ctx.lineTo(sx-3.3*k,sy-1*k);ctx.moveTo(sx+2.7*k,sy-6.5*k);ctx.lineTo(sx+3.3*k,sy-1*k);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(sx-1.6*k,sy+7*k);ctx.lineTo(sx-1.6*k,sy+3*k);ctx.lineTo(sx+1.6*k,sy+3*k);ctx.lineTo(sx+1.6*k,sy+7*k);ctx.stroke();
+    const pr=rr*0.36, yc=y-rr*0.18;
+    ctx.strokeStyle=rgba(base,0.95*appear);ctx.lineWidth=1.7;ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.arc(x,yc,pr,0.75*Math.PI,0.25*Math.PI,false);
+    ctx.lineTo(x,yc+pr*2.0);
+    ctx.closePath();ctx.stroke();
+    ctx.beginPath();ctx.arc(x,yc,pr*0.34,0,TAU);ctx.stroke();
     // check badge on hope
     if(lit>0.5){
       const bx=x+rr*0.72, by=y-rr*0.72;
