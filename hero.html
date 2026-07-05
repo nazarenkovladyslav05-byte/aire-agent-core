@@ -90,6 +90,8 @@ body.light .tagline{color:var(--zfaint)}
 .gbar i{display:block;height:100%;width:100%;background:var(--ember);opacity:.55}
 .gate.on .gbar i{animation:gburn 9s linear forwards}
 @keyframes gburn{from{width:100%}to{width:0}}
+/* человек начал печатать — таймер замирает */
+.gate.hold .gbar i{animation-play-state:paused;opacity:.25}
 .gskip{margin-top:1.7rem;background:transparent;border:0;cursor:pointer;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .gskip:hover{color:var(--dim)}
@@ -483,6 +485,13 @@ body.light .hint,body.light .credits{opacity:0}
     if(cont) setTimeout(()=>window.scrollTo({top:lockY+window.innerHeight*0.9,behavior:"smooth"}),150);
   }
   gskip.addEventListener("click",()=>closeGate(true));
+  // начал писать — автопродолжение выключается, полоска замирает
+  gin.addEventListener("input",()=>{
+    if(gateState===1 && gin.value.trim()){
+      clearTimeout(gateTimer); gateTimer=null;
+      gate.classList.add("hold");
+    }
+  });
   gform.addEventListener("submit",e=>{
     e.preventDefault();
     const raw=gin.value.trim(); if(!raw){gin.focus();return;}
