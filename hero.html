@@ -66,24 +66,19 @@ body.light .tagline{color:var(--zfaint)}
 .heroui .deadline{margin-top:1.4rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
   text-transform:uppercase;color:var(--faint)}
 
-/* ask overlay — появляется на входе в скан, НЕ в hero */
-.coreui{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:22;
-  width:min(86vw,440px);text-align:center;pointer-events:none;opacity:0;transition:opacity .5s ease}
-.coreui .ask{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ember);opacity:.9;margin-bottom:1rem}
-.coreui form{pointer-events:none;display:flex;align-items:center;justify-content:center;gap:.5rem;
-  border-bottom:1px solid rgba(255,157,92,.35);padding:.4rem .2rem;max-width:340px;margin:0 auto;
-  transition:border-color .3s ease}
-.coreui form:focus-within{border-color:rgba(255,157,92,.75)}
-.coreui input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
-  font-family:var(--body);font-size:1.02rem;text-align:center;caret-color:var(--ember)}
-.coreui input::placeholder{color:var(--faint)}
-.coreui button{background:transparent;border:0;cursor:pointer;color:var(--ember);
-  font-family:var(--mono);font-size:1.1rem;line-height:1;padding:.2rem .3rem}
-.coreui .sub{margin-top:.9rem;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--faint)}
-.coreui.live form{pointer-events:auto}
-.coreui.gone{opacity:0 !important;pointer-events:none}
-.coreui.gone form{pointer-events:none}
+/* mini-ask — компактная строка ввода ПОД заголовком удара; не отдельный
+   этап (тот выпиливался мгновенным свайпом), а постоянная возможность:
+   написал — сцена перестраивается под тебя, нет — история идёт на демо */
+.miniask{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  max-width:360px;margin:1.5rem auto 0;border-bottom:1px solid rgba(255,157,92,.3);
+  padding:.35rem .2rem;transition:border-color .3s ease}
+.miniask:focus-within{border-color:rgba(255,157,92,.7)}
+.miniask input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
+  font-family:var(--body);font-size:.95rem;text-align:center;caret-color:var(--ember)}
+.miniask input::placeholder{color:var(--faint);font-size:.85rem}
+.miniask button{background:transparent;border:0;cursor:pointer;color:var(--ember);
+  font-family:var(--mono);font-size:1.05rem;line-height:1;padding:.2rem .3rem}
+.miniask.off{pointer-events:none}
 
 /* narration */
 .narr{position:fixed;left:0;right:0;z-index:21;text-align:center;pointer-events:none;
@@ -265,18 +260,13 @@ body.light .hint,body.light .credits{opacity:0}
   <div class="deadline">цель ЕС · до 2030 · весь бизнес в цифре</div>
 </div>
 
-<div class="coreui" id="coreui">
-  <div class="ask">проверим на твоём бизнесе?</div>
-  <form id="askform" autocomplete="off">
-    <input id="askin" type="text" placeholder="твоё дело и город" maxlength="48" aria-label="your business and city">
-    <button type="submit" aria-label="scan">↵</button>
-  </form>
-  <div class="sub" id="sub">или листай дальше — покажу на примере</div>
-</div>
-
 <div class="narr hit" id="nHit">
   <div class="kicker" id="hitKicker">я искал твой бизнес</div>
   <h2>Тебя перестают <span class="cold">находить</span></h2>
+  <form id="askform" class="miniask off" autocomplete="off">
+    <input id="askin" type="text" placeholder="твоё дело и город — проверю на тебе" maxlength="48" aria-label="your business and city">
+    <button type="submit" id="askbtn" aria-label="scan">↵</button>
+  </form>
 </div>
 <div class="narr hope" id="nHope">
   <h2>Тот же поток можно <span class="em">развернуть на тебя</span></h2>
@@ -418,7 +408,7 @@ body.light .hint,body.light .credits{opacity:0}
   // ring geometry — recomputed per frame
   function anchors(){
     if(WIDE) return {rx:Math.min(W*0.36,R*3.8), ry:Math.min(H*0.29,R*2.5), youAng:0};
-    return {rx:W*0.36, ry:H*0.27, youAng:Math.PI/2};
+    return {rx:W*0.36, ry:H*0.24, youAng:Math.PI/2};
   }
   function ringPos(a,ang,k){return {x:CX+Math.cos(ang)*a.rx*k, y:CY+Math.sin(ang)*a.ry*k};}
 
@@ -436,38 +426,31 @@ body.light .hint,body.light .credits{opacity:0}
   function trigger(b,c,demo){
     revealed=true;
     if(b){biz=b;city=c||"";}
-    coreui.classList.remove("live");
-    coreui.classList.add("gone");
     hint.textContent="scroll — смотри, что происходит";
   }
 
   // ---------- input ----------
-  const coreui=document.getElementById("coreui"),askform=document.getElementById("askform"),
-        askin=document.getElementById("askin"),sub=document.getElementById("sub"),hint=document.getElementById("hint"),
+  const askform=document.getElementById("askform"),
+        askin=document.getElementById("askin"),askbtn=document.getElementById("askbtn"),
+        hint=document.getElementById("hint"),
         nHit=document.getElementById("nHit"),nHope=document.getElementById("nHope"),
         hitKicker=document.getElementById("hitKicker"),counter=document.getElementById("counter"),
         cThem=document.getElementById("cThem"),cYou=document.getElementById("cYou");
 
   const heroui=document.getElementById("heroui");
-  let interacted=false;
-  askin.addEventListener("focus",()=>interacted=true);
-  askin.addEventListener("input",()=>interacted=true);
   askform.addEventListener("submit",e=>{
     e.preventDefault();
     const raw=askin.value.trim(); if(!raw){askin.focus();return;}
     let b=raw,c=""; const m=raw.split(/[,·|]/);
     if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
     hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
-    trigger(b,c,false);
+    biz=b;city=c;                       // сцена уже идёт — перестраивается вживую
+    askbtn.textContent="✓";
+    askin.blur();
   });
-  // демо запускает СКРОЛЛ, не таймер: пролистал приглашение — агент
-  // показывает на обобщённом «твой бизнес» (объект-витрина, не «кофейня»)
+  // скан стартует сразу по скроллу — нет отдельного этапа, нечего пропустить
   function maybeDemo(){
-    if(revealed) return;
-    if(energy>0.24 && !interacted){
-      hitKicker.textContent="я искал твой бизнес в среде";
-      trigger(null,null,true);
-    }
+    if(!revealed && energy>0.05) trigger(null,null,true);
   }
 
   // ---------- draw helpers ----------
@@ -744,16 +727,12 @@ body.light .hint,body.light .credits{opacity:0}
     maybeDemo();
     // hero hook fades as the scan chapter begins
     heroui.style.opacity = 1-smooth(0.03,0.1,energy);
-    // ask overlay lives between hero and the scan reveal
-    if(!revealed){
-      const askVis = smooth(0.05,0.12,energy)*(1-smooth(0.2,0.26,energy));
-      coreui.style.opacity = askVis;
-      coreui.classList.toggle("live", askVis>0.5);
-    }
     const scanTarget = revealed ? (0.4+0.6*smooth(0.02,0.34,energy))*smooth(0.015,0.07,energy) : 0;
     reveal += (scanTarget-reveal)*0.05;
     const dawnFade=1-smooth(0.76,0.9,energy);   // dark-act text dissolves into the dawn
-    nHit.style.opacity  = revealed ? smooth(0.16,0.32,energy)*(1-smooth(0.46,0.56,energy)) : 0;
+    const hitOp = revealed ? smooth(0.1,0.24,energy)*(1-smooth(0.46,0.56,energy)) : 0;
+    nHit.style.opacity = hitOp;
+    askform.classList.toggle("off", hitOp<0.3);   // невидимая форма не должна ловить тапы
     nHope.style.opacity = revealed ? smooth(0.56,0.7,energy)*dawnFade : 0;
     // мобайл: счётчик и «твой бизнес» делят низ экрана — счётчик гаснет
     // ДО вспышки медальона (никаких наложений)
