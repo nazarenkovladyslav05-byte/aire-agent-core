@@ -484,7 +484,12 @@ body.light .hint,body.light .credits{opacity:0}
     gateState=2; clearTimeout(gateTimer);
     gate.classList.remove("on"); gate.setAttribute("aria-hidden","true");
     document.documentElement.style.overflow="";
-    if(cont) setTimeout(()=>window.scrollTo({top:lockY+window.innerHeight*0.9,behavior:"smooth"}),150);
+    if(cont) setTimeout(()=>{
+      // везём точно в ПИК надежды (медальон загорелся, ещё темно),
+      // а не вслепую вперёд — человек должен УВИДЕТЬ, что он появился
+      const m=scrollerEl.offsetHeight-window.innerHeight;
+      window.scrollTo({top:Math.max(m*0.62,lockY), behavior:"smooth"});
+    },150);
   }
   gskip.addEventListener("click",()=>closeGate(true));
   // начал писать — автопродолжение выключается, полоска замирает
@@ -620,6 +625,19 @@ body.light .hint,body.light .credits{opacity:0}
     const yp=ringPos(a, a.youAng, youK);
     YOU.x=yp.x; YOU.y=yp.y;
     const themN=Math.round(smooth(0.1,0.45,energy)*12);
+    // IGNITION BURST — момент «твой бизнес ПОЯВИЛСЯ»: разлетается кольцо
+    const ignite=smooth(0.58,0.72,energy);        // пик вспышки = момент, когда пин синеет (hope>0.5)
+    const rr0=(WIDE?36:31)*(1+0.55*hope);
+    if(ignite>0.001 && ignite<0.999){
+      const pop=ignite*(1-ignite)*4;              // колокол, пик в середине загорания
+      for(let r=0;r<2;r++){
+        const gr=rr0*(1.0+ (ignite+r*0.22)*2.6);
+        ctx.lineWidth=(2.4-r*0.9)*pop;
+        ctx.strokeStyle=rgba(COL.accent, (0.7-r*0.3)*pop*intensity);
+        ctx.beginPath();ctx.arc(yp.x,yp.y,gr,0,TAU);ctx.stroke();
+      }
+      orb(yp.x,yp.y, rr0*(1.4+pop*1.8), COL.accent, 0.35*pop*intensity);
+    }
     youCard(yp.x, yp.y, youAppear, hope, biz, themN, 1+0.55*hope);
 
     // searchers
@@ -766,7 +784,7 @@ body.light .hint,body.light .credits{opacity:0}
   // Light radiates FROM your lit card (не отдельный wipe): надежда
   // буквально становится светом следующей главы.
   function drawDawn(){
-    const d=smooth(0.74,0.97,energy);
+    const d=smooth(0.8,0.98,energy);   // рассвет позже: у надежды есть свой бит на тёмном
     if(d<=0.005)return;
     const a=anchors();
     const yp=(YOU.x||YOU.y)?YOU:ringPos(a,a.youAng,1);
@@ -791,7 +809,7 @@ body.light .hint,body.light .credits{opacity:0}
       ctx.fillStyle=rgba([255,255,255],0.9*hor);ctx.fillRect(0,y-0.6,W,1.2);
     }
     // full flood at the very end so the seam to the light zone is clean
-    const f=smooth(0.9,1,energy);
+    const f=smooth(0.94,1,energy);
     if(f>0.005){ctx.fillStyle="rgba(246,248,251,"+f+")";ctx.fillRect(0,0,W,H);}
   }
 
@@ -802,7 +820,7 @@ body.light .hint,body.light .credits{opacity:0}
     heroui.style.opacity = 1-smooth(0.03,0.1,energy);
     const scanTarget = revealed ? (0.4+0.6*smooth(0.02,0.34,energy))*smooth(0.015,0.07,energy) : 0;
     reveal += (scanTarget-reveal)*0.05;
-    const dawnFade=1-smooth(0.76,0.9,energy);   // dark-act text dissolves into the dawn
+    const dawnFade=1-smooth(0.84,0.95,energy);  // dark-act text dissolves into the dawn
     const hitOp = revealed ? smooth(0.1,0.24,energy)*(1-smooth(0.46,0.56,energy)) : 0;
     nHit.style.opacity = hitOp;
     nHope.style.opacity = revealed ? smooth(0.56,0.7,energy)*dawnFade : 0;
