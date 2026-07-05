@@ -1,12 +1,13 @@
-<title>AIRE — Agent Core (Loop → Iris)</title>
+<title>AIRE — Agent Core (Ring–Iris)</title>
 <style>
 /* ============================================================
-   AIRE — Agent Core, approved direction (Phase 1 reference).
-   The core lives as a LOOP (the environment / the cycle you're
-   outside of) and, as you scroll toward the finale, folds into
-   an IRIS (the agent wakes, looks at you, becomes the chat).
-   Two roles from 03_SITE_CONCEPT §2. Graphite Current only.
-   Pure canvas, 0 credits. This is the Motion reference.
+   AIRE — Agent Core, approved direction A: RING–IRIS.
+   One unified form. A ring of running current = the Loop
+   (the cycle you're outside of) AND the iris of an eye.
+   As you scroll, the ring dilates open like an aperture:
+   the iris fills in and the pupil opens and looks at you —
+   the agent wakes. Two roles, one object. Graphite Current.
+   Pure canvas, 0 credits. Motion reference.
    ============================================================ */
 :root{
   --bg:#07080C; --text:#E9ECF1; --dim:#98A0AC; --faint:#79818E;
@@ -48,11 +49,11 @@ canvas{display:block;width:100%;height:100%}
 <div class="scroller"></div>
 
 <div class="hud">
-  <div class="brand">AIRE · <b>Agent Core</b> · Loop → Iris</div>
+  <div class="brand">AIRE · <b>Agent Core</b> · Ring–Iris</div>
   <a class="explore" href="explore.html">Все 4 формы →</a>
 </div>
 
-<div class="hint">scroll — среда сворачивается в агента</div>
+<div class="hint">scroll — кольцо раскрывается в глаз</div>
 
 <div class="readout">
   <div class="chapter">
@@ -72,6 +73,7 @@ canvas{display:block;width:100%;height:100%}
   const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const clamp=(v,a,b)=>v<a?a:v>b?b:v;
   const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+  const TAU=6.28318;
 
   let W=0,H=0,DPR=1,CX=0,CY=0,R=0;
   function resize(){
@@ -92,7 +94,7 @@ canvas{display:block;width:100%;height:100%}
 
   const CH=[
     {t:0.00,role:"СРЕДА",name:"Цикл, в котором тебя ищут — и не находят"},
-    {t:0.30,role:"ПУСТОТА",name:"Все конкуренты внутри. Тебя — нет."},
+    {t:0.30,role:"ПУСТОТА",name:"Внутри — все конкуренты. Тебя нет."},
     {t:0.55,role:"ПРОБУЖДЕНИЕ",name:"Тот же цикл может работать на тебя"},
     {t:0.82,role:"АГЕНТ",name:"Агент открывает глаза. Говори со мной."}
   ];
@@ -100,70 +102,93 @@ canvas{display:block;width:100%;height:100%}
   let last=-1;
   function chapter(){let i=0;for(let k=0;k<CH.length;k++)if(energy>=CH[k].t)i=k;if(i!==last){elRole.textContent=CH[i].role;elName.textContent=CH[i].name;last=i;}}
 
-  const P=[];function buildP(){P.length=0;const N=W<640?70:130;for(let i=0;i<N;i++)P.push({u:Math.random(),sp:0.15+Math.random()*0.25,w:0.4+Math.random()*0.9});}
+  // current particles running around the ring
+  const P=[];function buildP(){P.length=0;const N=W<640?90:150;for(let i=0;i<N;i++)P.push({u:Math.random(),sp:0.6+Math.random()*0.8,w:0.4+Math.random()*1.0});}
   buildP();window.addEventListener("resize",buildP);
 
-  function orb(x,y,r,c,a){if(r<=0||a<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(c,a));g.addColorStop(0.4,rgba(c,a*0.5));g.addColorStop(1,rgba(c,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
+  function orb(x,y,r,c,a){if(r<=0||a<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(c,a));g.addColorStop(0.4,rgba(c,a*0.5));g.addColorStop(1,rgba(c,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}
 
-  function drawLoop(t,breath,amt,px){
-    if(amt<=0)return;
+  function frameDraw(t,breath){
     const col=mix(COL.accent,COL.volt,energy);
-    const shrink=0.55+0.45*amt;                       // collapses inward as it fades
-    const rx=R*2.1*shrink*(0.92+breath*0.05), ry=R*1.05*shrink*(0.92+breath*0.05);
-    const tilt=pointer.active?clamp(px/W,-0.5,0.5):0;
-    ctx.save();ctx.translate(CX,CY);ctx.rotate(tilt*0.5);ctx.globalAlpha=amt;
-    orb(0,0,rx*1.1,col,0.05+energy*0.05);
-    const speed=(reduced?0:1)*(0.15+energy*0.9);
-    const pos=u=>{const a=u*6.2832,k=1+Math.sin(a)*Math.sin(a);return[rx*Math.cos(a)/k,ry*Math.sin(a)*Math.cos(a)/k*2];};
-    ctx.strokeStyle=rgba(col,0.10+energy*0.10);ctx.lineWidth=1.5;ctx.beginPath();
-    for(let u=0;u<=1.001;u+=0.01){const p=pos(u);u===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]);}ctx.stroke();
-    for(const pt of P){pt.u=(pt.u+pt.sp*speed*0.01)%1;const p=pos(pt.u),pj=pos((pt.u-0.02+1)%1);
-      const g=ctx.createLinearGradient(pj[0],pj[1],p[0],p[1]);g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.7*(0.4+energy*0.6)));
-      ctx.strokeStyle=g;ctx.lineWidth=pt.w*(1+energy);ctx.beginPath();ctx.moveTo(pj[0],pj[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();
-      orb(p[0],p[1],4+energy*4,col,0.4);}
-    ctx.restore();ctx.globalAlpha=1;
-  }
+    const irisAmt=smooth(0.42,0.92,energy);            // interior wakes up
+    // gentle parallax
+    const ox=CX+pointer.x*0.04, oy=CY+pointer.y*0.04;
+    const ringR=R*1.75*(0.97+breath*0.03);
 
-  function drawIris(t,breath,amt,px,py){
-    if(amt<=0)return;
-    const col=mix(COL.steel,COL.accent,energy);
-    const grow=0.4+0.6*amt;                            // grows in as it appears
-    const base=R*(1.6+energy*0.4)*grow*(0.96+breath*0.05);
-    ctx.save();ctx.globalAlpha=amt;
-    orb(CX,CY,base*1.5,col,0.05+energy*0.06);
-    const rot=reduced?0:t*0.12;
-    if(ctx.createConicGradient){const cg=ctx.createConicGradient(rot,CX,CY);
-      cg.addColorStop(0,rgba(col,0));cg.addColorStop(0.25,rgba(col,0.28+energy*0.25));cg.addColorStop(0.5,rgba(col,0));
-      cg.addColorStop(0.75,rgba(COL.ice,0.2+energy*0.2));cg.addColorStop(1,rgba(col,0));
-      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(CX,CY,base,0,6.2832);ctx.fill();}
-    ctx.lineCap="round";
-    for(let ring=0;ring<4;ring++){const rr=base*(0.55+ring*0.16),segs=8+ring*3;ctx.lineWidth=2+energy*1.5;
-      for(let s=0;s<segs;s++){const a0=(s/segs)*6.2832+rot*(ring%2?-1:1)*(1+ring*0.3),a1=a0+(6.2832/segs)*0.55;
-        ctx.strokeStyle=rgba(col,0.18+energy*0.4*(1-ring/5));ctx.beginPath();ctx.arc(CX,CY,rr,a0,a1);ctx.stroke();}}
-    const look=pointer.active?0.10:0;const pxp=CX+px*look,pyp=CY+py*look;
-    const pr=base*(0.30+energy*0.12)*(0.9+breath*0.15);
-    orb(pxp,pyp,pr*1.6,col,0.35);ctx.fillStyle=COL.bg;ctx.beginPath();ctx.arc(pxp,pyp,pr,0,6.2832);ctx.fill();
-    orb(pxp,pyp,pr*0.7,COL.ice,0.5+energy*0.4);
-    ctx.restore();ctx.globalAlpha=1;
+    // ambient bloom
+    orb(ox,oy, ringR*1.25, col, 0.05+energy*0.06);
+
+    // ---- IRIS INTERIOR (fills in as agent wakes) ----
+    if(irisAmt>0){
+      const rot=reduced?0:t*0.12;
+      ctx.save(); ctx.globalAlpha=irisAmt;
+      // conic sheen clipped to the ring
+      if(ctx.createConicGradient){
+        ctx.save(); ctx.beginPath(); ctx.arc(ox,oy,ringR*0.98,0,TAU); ctx.clip();
+        const cg=ctx.createConicGradient(rot,ox,oy);
+        cg.addColorStop(0,rgba(col,0));cg.addColorStop(0.25,rgba(col,0.26+energy*0.22));cg.addColorStop(0.5,rgba(col,0));
+        cg.addColorStop(0.75,rgba(COL.ice,0.18+energy*0.18));cg.addColorStop(1,rgba(col,0));
+        ctx.fillStyle=cg; ctx.fillRect(ox-ringR,oy-ringR,ringR*2,ringR*2);
+        ctx.restore();
+      }
+      // concentric iris ring-segments inside the current ring
+      ctx.lineCap="round";
+      for(let ring=0;ring<3;ring++){
+        const rr=ringR*(0.42+ring*0.18), segs=10+ring*4; ctx.lineWidth=2+energy*1.4;
+        for(let s=0;s<segs;s++){
+          const a0=(s/segs)*TAU+rot*(ring%2?-1:1)*(1+ring*0.3), a1=a0+(TAU/segs)*0.5;
+          ctx.strokeStyle=rgba(mix(COL.steel,COL.accent,energy),0.16+energy*0.34*(1-ring/4));
+          ctx.beginPath();ctx.arc(ox,oy,rr,a0,a1);ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    // ---- CURRENT RING (the Loop — always present) ----
+    // faint guide circle
+    ctx.strokeStyle=rgba(col,0.10+energy*0.10); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(ox,oy,ringR,0,TAU); ctx.stroke();
+    // running current with trails
+    const speed=(reduced?0:1)*(0.5+energy*1.1);
+    for(const pt of P){
+      pt.u=(pt.u+pt.sp*speed*0.0016)%1;
+      const a=pt.u*TAU, aj=a-0.05;
+      const x=ox+Math.cos(a)*ringR, y=oy+Math.sin(a)*ringR;
+      const xj=ox+Math.cos(aj)*ringR, yj=oy+Math.sin(aj)*ringR;
+      const g=ctx.createLinearGradient(xj,yj,x,y);
+      g.addColorStop(0,rgba(col,0)); g.addColorStop(1,rgba(COL.ice,0.75*(0.45+energy*0.55)));
+      ctx.strokeStyle=g; ctx.lineWidth=pt.w*(1+energy*0.8);
+      ctx.beginPath();ctx.moveTo(xj,yj);ctx.lineTo(x,y);ctx.stroke();
+      orb(x,y,3+energy*3,col,0.4);
+    }
+
+    // ---- PUPIL (opens and looks at you) ----
+    if(irisAmt>0){
+      const look=pointer.active?0.12:0;
+      const pxp=ox+pointer.x*look, pyp=oy+pointer.y*look;
+      const pr=ringR*(0.10+0.20*energy)*irisAmt*(0.9+breath*0.15);
+      orb(pxp,pyp,pr*1.9,col,0.4*irisAmt);
+      ctx.save();ctx.globalAlpha=irisAmt;
+      ctx.fillStyle=COL.bg;ctx.beginPath();ctx.arc(pxp,pyp,pr,0,TAU);ctx.fill();
+      ctx.restore();
+      orb(pxp,pyp,pr*0.65,COL.ice,(0.5+energy*0.4)*irisAmt);
+    }
   }
 
   let t0=null;
-  function frame(ts){
+  function loop(ts){
     if(t0===null)t0=ts;const t=(ts-t0)/1000;
     energy+=(energyTarget-energy)*0.06;
     pointer.x+=(pointer.tx-pointer.x)*0.08;pointer.y+=(pointer.ty-pointer.y)*0.08;
     if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
     const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
-    const loopAmt=1-smooth(0.45,0.85,energy);          // loop dominant early
-    const irisAmt=smooth(0.55,0.95,energy);            // iris takes over at finale
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
-    drawLoop(t,breath,loopAmt,pointer.x);
-    drawIris(t,breath,irisAmt,pointer.x,pointer.y);
+    frameDraw(t,breath);
     ctx.globalCompositeOperation="source-over";
     chapter();mE.textContent=energy.toFixed(2);
-    requestAnimationFrame(frame);
+    requestAnimationFrame(loop);
   }
-  resize();readScroll();requestAnimationFrame(frame);
+  resize();readScroll();requestAnimationFrame(loop);
 })();
 </script>
