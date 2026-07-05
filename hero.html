@@ -56,12 +56,21 @@ body.light .logo .lgl{display:block}
 .tagline{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);transition:color .6s ease}
 body.light .tagline{color:var(--zfaint)}
 
-/* input embedded IN the core */
-.coreui{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;
-  width:min(86vw,440px);text-align:center;pointer-events:none;transition:opacity .5s ease}
+/* HERO: plain-language hook, no input (фидбек Влада: сначала контекст, потом просьба) */
+.heroui{position:fixed;left:50%;top:clamp(4.5rem,14vh,9rem);transform:translateX(-50%);z-index:22;
+  width:min(92vw,820px);text-align:center;pointer-events:none;transition:opacity .4s ease}
+.heroui h1{font-family:var(--disp);font-weight:800;letter-spacing:-.03em;line-height:1.03;
+  font-size:clamp(2.1rem,6.6vw,4.2rem);color:var(--text);text-wrap:balance}
+.heroui h1 .cold{color:var(--accent)}
+.heroui p{max-width:560px;margin:1.3rem auto 0;color:var(--dim);font-size:clamp(.95rem,2.4vw,1.08rem);line-height:1.65}
+.heroui p b{color:var(--text);font-weight:600}
+
+/* ask overlay — появляется на входе в скан, НЕ в hero */
+.coreui{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:22;
+  width:min(86vw,440px);text-align:center;pointer-events:none;opacity:0;transition:opacity .5s ease}
 .coreui .ask{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--ember);opacity:.9;margin-bottom:1rem}
-.coreui form{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:.5rem;
+.coreui form{pointer-events:none;display:flex;align-items:center;justify-content:center;gap:.5rem;
   border-bottom:1px solid rgba(255,157,92,.35);padding:.4rem .2rem;max-width:340px;margin:0 auto;
   transition:border-color .3s ease}
 .coreui form:focus-within{border-color:rgba(255,157,92,.75)}
@@ -71,7 +80,9 @@ body.light .tagline{color:var(--zfaint)}
 .coreui button{background:transparent;border:0;cursor:pointer;color:var(--ember);
   font-family:var(--mono);font-size:1.1rem;line-height:1;padding:.2rem .3rem}
 .coreui .sub{margin-top:.9rem;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--faint)}
-.coreui.gone{opacity:0;pointer-events:none}
+.coreui.live form{pointer-events:auto}
+.coreui.gone{opacity:0 !important;pointer-events:none}
+.coreui.gone form{pointer-events:none}
 
 /* narration */
 .narr{position:fixed;left:0;right:0;z-index:21;text-align:center;pointer-events:none;
@@ -88,7 +99,7 @@ body.light .tagline{color:var(--zfaint)}
 .narr .cold{color:var(--accent)}    /* cold verdict of the environment */
 
 /* live counter */
-.counter{position:fixed;left:50%;bottom:clamp(6.5rem,20vh,11rem);transform:translateX(-50%);z-index:21;
+.counter{position:fixed;left:50%;bottom:clamp(2.4rem,6vh,4rem);transform:translateX(-50%);z-index:21;
   display:flex;gap:clamp(1.4rem,6vw,3rem);align-items:center;opacity:0;transition:opacity .5s ease;pointer-events:none}
 .counter .cell{text-align:center}
 .counter .num{font-family:var(--disp);font-weight:800;font-size:clamp(1.7rem,5vw,2.6rem);line-height:1;letter-spacing:-.02em}
@@ -178,6 +189,8 @@ body.light .hint,body.light .credits{opacity:0}
 }
 @media (max-width:640px){ .tagline{display:none} .credits{display:none} }
 @media (max-width:760px){
+  /* мобайл: «твой бизнес» внизу кольца — счётчик уходит под него */
+  .counter{bottom:1.9rem}
   .thread{left:17px;transform:none}
   .thread .spark{left:18px}
   .stage{grid-template-columns:44px 1fr;margin-bottom:clamp(3.2rem,8vh,5rem)}
@@ -245,13 +258,20 @@ body.light .hint,body.light .credits{opacity:0}
   <div class="tagline">2026 → 2030 · digital decade</div>
 </div>
 
+<div class="heroui" id="heroui">
+  <h1>Кого не находят — <span class="cold">того не выбирают</span></h1>
+  <p>Твой клиент ищет в Google, в картах — и уже спрашивает AI.
+     Если твоего бизнеса там нет, заказ получает другой.
+     <b>Цель ЕС: к 2030 весь малый бизнес — в цифре.</b> Окно закрывается.</p>
+</div>
+
 <div class="coreui" id="coreui">
-  <div class="ask">говори со мной</div>
+  <div class="ask">проверим на твоём бизнесе?</div>
   <form id="askform" autocomplete="off">
     <input id="askin" type="text" placeholder="твоё дело и город" maxlength="48" aria-label="your business and city">
     <button type="submit" aria-label="scan">↵</button>
   </form>
-  <div class="sub" id="sub">напиши — я покажу твой бизнес в среде</div>
+  <div class="sub" id="sub">или листай дальше — покажу на примере</div>
 </div>
 
 <div class="narr hit" id="nHit">
@@ -383,21 +403,23 @@ body.light .hint,body.light .credits{opacity:0}
   let revealed=false, reveal=0;
   let biz="твой бизнес", city="";
   const NCARD = 5;
-  const CARDS=[];                          // competitor cards
+  // РАДИАЛЬНАЯ сцена (Влад): ядро в центре, конкуренты ВЫЛЕТАЮТ из ядра
+  // на кольцо вокруг него, «твой бизнес» тоже исходит из центра — на свой
+  // слот кольца (справа на десктопе, снизу на мобиле)
+  const OFFS=[0.95,1.75,2.55,3.7,4.9];     // угловые слоты конкурентов от слота YOU
+  const CARDS=[];
   function seedCards(){
     CARDS.length=0;
-    // fixed pseudo-scatter offsets around the "them" anchor (units of R)
-    const off=[[-0.2,-1.7],[0.9,-0.55],[-1.05,0.15],[0.55,0.95],[-0.35,1.75]];
-    for(let i=0;i<NCARD;i++) CARDS.push({ox:off[i][0], oy:off[i][1], appear:0, pulse:(i*0.21)%1});
+    for(let i=0;i<NCARD;i++) CARDS.push({off:OFFS[i]+((i*0.13)%1-0.5)*0.18, appear:0, pulse:(i*0.21)%1});
   }
   seedCards();
 
-  // layout anchors (them cluster / you card) — recomputed per frame
+  // ring geometry — recomputed per frame
   function anchors(){
-    if(WIDE) return {them:{x:CX-R*3.4,y:CY+R*0.2}, you:{x:CX+R*3.5,y:CY+R*0.2}, spread:R*1.15, sx:1, sy:1};
-    // mobile: competitors in a compact band above the eye (clear of the H2), you below
-    return {them:{x:CX,y:CY-R*2.5}, you:{x:CX,y:CY+R*3.3}, spread:R*1.2, sx:1.45, sy:0.5};
+    if(WIDE) return {rx:Math.min(W*0.36,R*3.8), ry:Math.min(H*0.29,R*2.5), youAng:0};
+    return {rx:W*0.36, ry:H*0.27, youAng:Math.PI/2};
   }
+  function ringPos(a,ang,k){return {x:CX+Math.cos(ang)*a.rx*k, y:CY+Math.sin(ang)*a.ry*k};}
 
   // searchers streaming to competitors (redirect to YOU on hope)
   const FLOW=[];
@@ -405,14 +427,15 @@ body.light .hint,body.light .credits{opacity:0}
     const a=anchors();
     const src={x:CX+(Math.random()*2-1)*W*0.55, y:CY+(Math.random()*2-1)*H*0.55};
     let tgt;
-    if(toYou){ tgt={x:a.you.x,y:a.you.y}; }
-    else{ const c=CARDS[(Math.random()*CARDS.length)|0]; tgt={x:a.them.x+c.ox*a.spread*a.sx, y:a.them.y+c.oy*a.spread*a.sy}; }
+    if(toYou){ tgt=ringPos(a,a.youAng,1); }
+    else{ const c=CARDS[(Math.random()*CARDS.length)|0]; tgt=ringPos(a,a.youAng+c.off,1); }
     FLOW.push({sx:src.x,sy:src.y,tx:tgt.x,ty:tgt.y,t:0,sp:0.012+Math.random()*0.01,you:!!toYou});
   }
 
   function trigger(b,c,demo){
     revealed=true;
     if(b){biz=b;city=c||"";}
+    coreui.classList.remove("live");
     coreui.classList.add("gone");
     hint.textContent="scroll — смотри, что происходит";
   }
@@ -424,6 +447,7 @@ body.light .hint,body.light .credits{opacity:0}
         hitKicker=document.getElementById("hitKicker"),counter=document.getElementById("counter"),
         cThem=document.getElementById("cThem"),cYou=document.getElementById("cYou");
 
+  const heroui=document.getElementById("heroui");
   let interacted=false;
   askin.addEventListener("focus",()=>interacted=true);
   askin.addEventListener("input",()=>interacted=true);
@@ -434,12 +458,16 @@ body.light .hint,body.light .credits{opacity:0}
     if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
     hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
     trigger(b,c,false);
-    setTimeout(()=>window.scrollTo({top:window.innerHeight*0.95,behavior:"smooth"}),450);
   });
-  setTimeout(()=>{ if(!interacted&&!revealed){
-    hitKicker.textContent="я искал кофейню в Дублине"; sub.textContent="демо — или напиши своё";
-    trigger("кофейня","Дублин",true);
-  }}, 4800);
+  // демо запускает СКРОЛЛ, не таймер: пролистал приглашение — агент
+  // показывает на обобщённом «твой бизнес» (объект-витрина, не «кофейня»)
+  function maybeDemo(){
+    if(revealed) return;
+    if(energy>0.24 && !interacted){
+      hitKicker.textContent="я искал твой бизнес в среде";
+      trigger(null,null,true);
+    }
+  }
 
   // ---------- draw helpers ----------
   function orb(x,y,r,c,a){if(r<=0||a<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);
@@ -488,15 +516,22 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.setLineDash(lit>0.5?[]:[5,5]);
     ctx.strokeStyle=rgba(base,(lit>0.5?0.85:0.5)*appear);
     rrect(gx,gy,w,h,r);ctx.stroke();ctx.setLineDash([]);
-    // marker: empty circle → check
+    // marker: STOREFRONT (объект-символ бизнеса, фидбек Влада) → check on hope
     const mx=gx+18, my=gy+16;
     if(lit>0.5){
       ctx.fillStyle=rgba(COL.accent,0.95*appear);ctx.beginPath();ctx.arc(mx,my,7,0,TAU);ctx.fill();
       ctx.strokeStyle=rgba([255,255,255],0.95);ctx.lineWidth=1.7;ctx.lineCap="round";
       ctx.beginPath();ctx.moveTo(mx-3,my);ctx.lineTo(mx-0.6,my+2.6);ctx.lineTo(mx+3.2,my-2.8);ctx.stroke();
     }else{
-      ctx.strokeStyle=rgba(COL.dead,0.7*appear);ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.arc(mx,my,6.5,0,TAU);ctx.stroke();
+      const sx=mx, sy=y-2;
+      ctx.strokeStyle=rgba(COL.dead,0.85*appear);ctx.lineWidth=1.3;ctx.lineCap="round";ctx.lineJoin="round";
+      // shop body
+      ctx.beginPath();ctx.moveTo(sx-6,sy-1);ctx.lineTo(sx-6,sy+7);ctx.lineTo(sx+6,sy+7);ctx.lineTo(sx+6,sy-1);ctx.stroke();
+      // awning
+      ctx.beginPath();ctx.moveTo(sx-8,sy-1);ctx.lineTo(sx-6.5,sy-6.5);ctx.lineTo(sx+6.5,sy-6.5);ctx.lineTo(sx+8,sy-1);ctx.closePath();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(sx-2.7,sy-6.5);ctx.lineTo(sx-3.3,sy-1);ctx.moveTo(sx+2.7,sy-6.5);ctx.lineTo(sx+3.3,sy-1);ctx.stroke();
+      // door
+      ctx.beginPath();ctx.moveTo(sx-1.6,sy+7);ctx.lineTo(sx-1.6,sy+3);ctx.lineTo(sx+1.6,sy+3);ctx.lineTo(sx+1.6,sy+7);ctx.stroke();
     }
     // labels
     ctx.textAlign="left";
@@ -514,17 +549,19 @@ body.light .hint,body.light .credits{opacity:0}
     if(intensity<=0.001)return;
     const a=anchors();
     const hope=smooth(0.5,0.72,energy);        // your side ignites
-    // stagger competitor appearance
+    // competitors are cast OUT of the core onto the ring (staggered)
     for(let i=0;i<CARDS.length;i++){
       const c=CARDS[i];
       const tgt=smooth(i*0.05, i*0.05+0.35, reveal);
       c.appear+=(tgt-c.appear)*0.08;
       c.pulse=(c.pulse+0.004)%1;
-      foundCard(a.them.x+c.ox*a.spread*a.sx, a.them.y+c.oy*a.spread*a.sy, c.appear*intensity, c.pulse);
+      const p=ringPos(a, a.youAng+c.off, 0.22+0.78*c.appear);   // fly-out from centre
+      foundCard(p.x, p.y, c.appear*intensity, c.pulse);
     }
-    // your card
+    // your card — тоже исходит из ядра на свой слот кольца
     const youAppear=smooth(0.25,0.6,reveal)*intensity;
-    youCard(a.you.x, a.you.y, youAppear, hope, biz);
+    const yp=ringPos(a, a.youAng, 0.22+0.78*smooth(0.25,0.6,reveal));
+    youCard(yp.x, yp.y, youAppear, hope, biz);
 
     // searchers
     if(!reduced && intensity>0.15){
@@ -550,21 +587,22 @@ body.light .hint,body.light .credits{opacity:0}
   function rotY(p,c,s){return [c*p[0]+s*p[2],p[1],-s*p[0]+c*p[2]];}
   const ARMS=3, VP=[], MP=[];
   function buildCore(){
-    VP.length=0;const nv=W<640?100:200;
+    VP.length=0;const nv=W<640?170:360;          // плотнее: «уплотнить и разжечь»
     for(let i=0;i<nv;i++)VP.push({u:Math.pow((i+0.5)/nv,0.7),arm:i%ARMS,jit:((i*0.37)%1-0.5)*0.16});
-    MP.length=0;const nm=W<640?40:70;
+    MP.length=0;const nm=W<640?60:110;
     for(let i=0;i<nm;i++)MP.push({u:(i*0.113)%1,sp:0.6+((i*0.29)%1)*0.7});
   }
   buildCore();window.addEventListener("resize",()=>{buildCore();seedCards();});
 
   function drawCore(t,breath){
     const col=mix(COL.accent,COL.volt,energy);
-    const ox=CX+pointer.x*0.05, oy=CY+pointer.y*0.05;
     const eye=reveal;                    // 0 vortex .. 1 eye
     const vortexA=(1-eye);
+    // in hero the core sits BELOW the H1 hook; on scan it returns to centre
+    const ox=CX+pointer.x*0.05, oy=CY+H*0.14*vortexA+pointer.y*0.05;
 
     // ---- Möbius loop (the cycle) — present in hero, recedes on scan ----
-    const loopA=(0.55*vortexA+0.12);
+    const loopA=(0.72*vortexA+0.12);
     if(loopA>0.02){
       const Rm=R*1.95*(0.97+breath*0.03), bw=R*0.34, f=R*7.5;
       const tiltC=Math.cos(1.02),tiltS=Math.sin(1.02);
@@ -573,11 +611,11 @@ body.light .hint,body.light .credits{opacity:0}
       const pt=(th,sg)=>{const ct=Math.cos(th),st=Math.sin(th),h=th*0.5,dR=Math.cos(h),dN=Math.sin(h);
         return project([Rm*ct+sg*bw*dR*ct,Rm*st+sg*bw*dR*st,sg*bw*dN]);};
       const S=88,A=[],B=[];for(let i=0;i<=S;i++){const th=i/S*TAU;A.push(pt(th,1));B.push(pt(th,-1));}
-      ctx.lineWidth=1.3;ctx.strokeStyle=rgba(col,0.24*loopA);
+      ctx.lineWidth=2;ctx.strokeStyle=rgba(col,0.34*loopA);
       ctx.beginPath();for(let i=0;i<=S;i++)i?ctx.lineTo(A[i][0],A[i][1]):ctx.moveTo(A[i][0],A[i][1]);ctx.stroke();
       ctx.beginPath();for(let i=0;i<=S;i++)i?ctx.lineTo(B[i][0],B[i][1]):ctx.moveTo(B[i][0],B[i][1]);ctx.stroke();
       const msp=(reduced?0:1)*(0.5+energy*0.7);
-      for(const p of MP){p.u=(p.u+p.sp*msp*0.0016)%1;const q=pt(p.u*TAU,0);orb(q[0],q[1],3,COL.ice,0.5*loopA);}
+      for(const p of MP){p.u=(p.u+p.sp*msp*0.0016)%1;const q=pt(p.u*TAU,0);orb(q[0],q[1],3.4,COL.ice,0.65*loopA);}
     }
 
     // ---- Vortex (hero) ----
@@ -589,8 +627,8 @@ body.light .hint,body.light .credits{opacity:0}
         const ang2=ang-0.07,x2=ox+Math.cos(ang2)*rad,y2=oy+Math.sin(ang2)*rad;
         const bright=(1-p.u*0.7);
         const g=ctx.createLinearGradient(x2,y2,x,y);
-        g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.5*bright*vortexA));
-        ctx.strokeStyle=g;ctx.lineWidth=0.6+bright*1.2;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x,y);ctx.stroke();
+        g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.65*bright*vortexA));
+        ctx.strokeStyle=g;ctx.lineWidth=0.8+bright*1.6;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x,y);ctx.stroke();
       }
     }
 
@@ -600,8 +638,11 @@ body.light .hint,body.light .credits{opacity:0}
       const contract=smooth(0.3,0.48,energy);      // hit: pupil shrinks/darkens
       // look direction: left toward competitors on scan, right toward YOU on hope
       const a=anchors();
-      const lookX = (hope>0.05)? (a.you.x-CX) : (a.them.x-CX);
-      const lookY = (hope>0.05)? (a.you.y-CY) : (a.them.y-CY);
+      const yp=ringPos(a,a.youAng,1);
+      // on scan the eye looks away from YOUR slot (to the competitors),
+      // on hope it turns to YOU
+      const lookX = (hope>0.05)? (yp.x-CX) : (CX-yp.x);
+      const lookY = (hope>0.05)? (yp.y-CY) : (CY-yp.y);
       const ll=Math.hypot(lookX,lookY)||1;
       const gaze=R*0.16*(0.4+0.6*Math.max(smooth(0.05,0.3,reveal),hope));
       const pux=ox+lookX/ll*gaze, puy=oy+lookY/ll*gaze;
@@ -642,7 +683,7 @@ body.light .hint,body.light .credits{opacity:0}
 
       // beam to YOUR card on hope
       if(hope>0.05){
-        const tgt=a.you;
+        const tgt=yp;
         const g=ctx.createLinearGradient(pux,puy,tgt.x,tgt.y);
         g.addColorStop(0,rgba(COL.ember,0.5*hope));g.addColorStop(1,rgba(COL.accent,0.15*hope));
         ctx.strokeStyle=g;ctx.lineWidth=1.4+2*hope;ctx.beginPath();ctx.moveTo(pux,puy);ctx.lineTo(tgt.x,tgt.y);ctx.stroke();
@@ -653,7 +694,11 @@ body.light .hint,body.light .credits{opacity:0}
     const focus=(0.12+0.35*energy)*R*(0.9+breath*0.15);
     const emberGlow=(1-reveal)*(0.5+0.5*Math.sin(t*0.9));
     if(emberGlow>0.02) orb(ox,oy,focus*2.0,COL.ember,0.10*emberGlow);
-    if(vortexA>0.02){ orb(ox,oy,focus*2.2,col,0.2*vortexA); orb(ox,oy,focus,COL.ice,0.5*vortexA); }
+    if(vortexA>0.02){ // hot heart — плотное горячее сердце ядра
+      orb(ox,oy,focus*2.6,col,0.3*vortexA);
+      orb(ox,oy,focus*1.3,COL.ice,0.55*vortexA);
+      orb(ox,oy,focus*0.5,[236,244,255],0.6*vortexA);
+    }
   }
 
   // ---------- DAWN: the hope flare floods the screen with light ----------
@@ -663,9 +708,10 @@ body.light .hint,body.light .credits{opacity:0}
     const d=smooth(0.74,0.97,energy);
     if(d<=0.005)return;
     const a=anchors();
+    const yp=ringPos(a,a.youAng,1);
     ctx.globalCompositeOperation="source-over";
     const rad=Math.hypot(W,H)*(0.12+1.15*d);
-    const g=ctx.createRadialGradient(a.you.x,a.you.y,0,a.you.x,a.you.y,rad);
+    const g=ctx.createRadialGradient(yp.x,yp.y,0,yp.x,yp.y,rad);
     g.addColorStop(0,"rgba(246,248,251,"+(0.96*d)+")");
     g.addColorStop(0.6,"rgba(246,248,251,"+(0.82*d)+")");
     g.addColorStop(1,"rgba(246,248,251,0)");
@@ -674,7 +720,7 @@ body.light .hint,body.light .credits{opacity:0}
     // разгорается в середине рассвета и растворяется в белом
     const hor=Math.sin(Math.PI*clamp(d,0,1));
     if(hor>0.02){
-      const y=a.you.y;
+      const y=yp.y;
       const band=ctx.createLinearGradient(0,y-110,0,y+110);
       band.addColorStop(0,"rgba(37,99,235,0)");
       band.addColorStop(0.5,rgba(COL.volt,0.34*hor));
@@ -690,13 +736,23 @@ body.light .hint,body.light .credits{opacity:0}
 
   // ---------- narration ----------
   function narrate(){
-    const scanTarget = revealed ? (0.4+0.6*smooth(0.02,0.34,energy)) : 0;
+    maybeDemo();
+    // hero hook fades as the scan chapter begins
+    heroui.style.opacity = 1-smooth(0.03,0.1,energy);
+    // ask overlay lives between hero and the scan reveal
+    if(!revealed){
+      const askVis = smooth(0.05,0.12,energy)*(1-smooth(0.2,0.26,energy));
+      coreui.style.opacity = askVis;
+      coreui.classList.toggle("live", askVis>0.5);
+    }
+    const scanTarget = revealed ? (0.4+0.6*smooth(0.02,0.34,energy))*smooth(0.015,0.07,energy) : 0;
     reveal += (scanTarget-reveal)*0.05;
     const dawnFade=1-smooth(0.76,0.9,energy);   // dark-act text dissolves into the dawn
     nHit.style.opacity  = revealed ? smooth(0.16,0.32,energy)*(1-smooth(0.46,0.56,energy)) : 0;
     nHope.style.opacity = revealed ? smooth(0.56,0.7,energy)*dawnFade : 0;
     counter.style.opacity = revealed ? smooth(0.14,0.3,energy)*(1-smooth(0.6,0.72,energy)) : 0;
-    hint.classList.toggle("off", energy>0.55);
+    const counterVis = revealed && energy>0.12 && energy<0.74;
+    hint.classList.toggle("off", energy>0.55 || counterVis);
     return reveal;
   }
 
