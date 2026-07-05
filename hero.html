@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIRE — Hero + Scan + What-we-do (Phase 2 prototype v3)</title>
+<title>AIRE — Hero + Scan + What-we-do + Packages (Phase 2 prototype v4)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;700;800&family=Besley:wght@800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
   --line:rgba(233,236,241,.14); --line-soft:rgba(233,236,241,.09);
   --accent:#5B9BFF; --volt:#2563EB; --steel:#3A72C4; --ice:#9EC4FF;
   --dead:#79818E;
-  --ember:#FF9D5C;            /* Agent Ember — rare living-agent spark only */
+  --ember:#E8A54B;            /* Agent Ember — единая янтарная искра живого агента (гейт/надежда + CTA-забота в пакетах) */
   --zbg:#F6F8FB; --ztext:#10151D; --zdim:#4A5361; --zfaint:#5C6572;
   --zline:rgba(16,21,29,.14);
   --disp:"Geist",system-ui,-apple-system,sans-serif;
@@ -78,15 +78,15 @@ body.light .tagline{color:var(--zfaint)}
 .gate.on .gwrap{opacity:1;transform:scale(1)}
 .gk{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
   color:var(--ember);margin-bottom:1.4rem}
-#gform{display:flex;align-items:center;gap:.6rem;border-bottom:2px solid rgba(255,157,92,.45);
+#gform{display:flex;align-items:center;gap:.6rem;border-bottom:2px solid rgba(232,165,75,.45);
   padding:.55rem .3rem;transition:border-color .3s ease}
-#gform:focus-within{border-color:rgba(255,157,92,.9)}
+#gform:focus-within{border-color:rgba(232,165,75,.9)}
 #gform input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
   font-family:var(--body);font-size:clamp(1.1rem,3.4vw,1.35rem);text-align:center;caret-color:var(--ember)}
 #gform input::placeholder{color:var(--faint)}
 #gform button{background:transparent;border:0;cursor:pointer;color:var(--ember);
   font-family:var(--mono);font-size:1.4rem;line-height:1;padding:.2rem .4rem}
-.gbar{height:1.5px;width:56%;margin:1.3rem auto 0;background:rgba(255,157,92,.12);border-radius:2px;overflow:hidden}
+.gbar{height:1.5px;width:56%;margin:1.3rem auto 0;background:rgba(232,165,75,.12);border-radius:2px;overflow:hidden}
 .gbar i{display:block;height:100%;width:100%;background:var(--ember);opacity:.55}
 .gate.on .gbar i{animation:gburn 9s linear forwards}
 @keyframes gburn{from{width:100%}to{width:0}}
@@ -213,6 +213,106 @@ body.light .hint,body.light .credits{opacity:0}
   .stage:nth-of-type(odd) .card p{margin-left:0}
   .stage:nth-of-type(odd) .card .tags{justify-content:flex-start}
 }
+/* ============================================================
+   PACKAGES — «Пакеты» (глава ТОК / ПРЕДЛОЖЕНИЕ)
+   Петля из светлой зоны ВОЗВРАЩАЕТСЯ и ЗАКРЫВАЕТСЯ по тарифам:
+   один общий круг в центре заполняется, к The Loop — замкнулся
+   и потёк. Связь с 4 этапами — частичная (полный цикл — только
+   на The Loop). Ember впервые ЗАКОНЕН — одна янтарная искра на
+   CTA The Loop (CTA-забота), кольцо/данные строго холодные.
+   ============================================================ */
+.zpack{border-top:1px solid var(--zline)}
+.zpack .zhead{margin-bottom:clamp(2.4rem,6vh,3.6rem)}
+.pkgtag{display:inline-block;margin-top:1.4rem;font-family:var(--mono);font-size:.66rem;
+  letter-spacing:.05em;color:var(--zdim);border:1px solid rgba(37,99,235,.3);
+  padding:.34rem .82rem;border-radius:999px;background:rgba(37,99,235,.05)}
+.pkgtag b{color:var(--volt);font-weight:600}
+
+.ptiers{display:grid;grid-template-columns:minmax(230px,.82fr) minmax(320px,1fr);
+  gap:clamp(1.6rem,5vw,4.5rem);align-items:start;max-width:1040px;margin:0 auto}
+.pringcol{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center}
+.pring{position:relative;width:min(78%,300px);aspect-ratio:1}
+.pring>svg{width:100%;height:100%;display:block}
+.pring .trk{fill:none;stroke:rgba(37,99,235,.13);stroke-width:5.5}
+.pring .fil{fill:none;stroke:url(#pgrad);stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:628.318;stroke-dashoffset:628.318;
+  transition:stroke-dashoffset .8s cubic-bezier(.16,1,.3,1)}
+.pring.closed .fil{filter:drop-shadow(0 0 9px rgba(37,99,235,.5))}
+.pring.closed>svg{animation:spin 30s linear infinite}
+.pcenter{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:0 14%}
+.pword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;
+  font-size:clamp(1.05rem,2.5vw,1.5rem);color:var(--ztext);line-height:1.12;transition:opacity .4s ease}
+.pcyc{font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;color:var(--volt);
+  margin-top:.7rem;max-width:12ch;line-height:1.55;opacity:0;transition:opacity .5s ease}
+.pring.closed .pcyc{opacity:1}
+.pnums{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--zfaint);margin-top:.55rem}
+
+.tiercol{display:flex;flex-direction:column}
+.tier{padding:clamp(2.2rem,7vh,4.4rem) 0;border-bottom:1px solid var(--zline);
+  opacity:.32;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.tier.on{opacity:1;transform:none}
+.thead{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.pnum{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--volt)}
+.price{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;
+  font-size:clamp(1.25rem,3.1vw,1.65rem);color:var(--ztext);white-space:nowrap}
+.tier h3{font-family:var(--disp);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(1.4rem,3.4vw,1.9rem);margin:.5rem 0 .2rem}
+.promise{font-family:var(--body);font-weight:600;color:var(--volt);font-size:1rem;margin-bottom:.6rem}
+.tier p{color:var(--zdim);font-size:.96rem;line-height:1.6;max-width:430px}
+.tier p .rc{color:var(--ztext);font-weight:600}
+.feat{list-style:none;margin:.95rem 0 0;display:flex;flex-wrap:wrap;gap:.4rem}
+.feat li{font-family:var(--mono);font-size:.62rem;letter-spacing:.02em;color:var(--zfaint);
+  border:1px solid var(--zline);padding:.24rem .6rem;border-radius:999px;background:#fff}
+.vbadge{display:inline-block;margin-top:.95rem;font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.05em;color:var(--volt);background:rgba(37,99,235,.08);
+  border:1px solid rgba(37,99,235,.28);padding:.28rem .72rem;border-radius:999px}
+.cta{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.35rem;text-decoration:none;
+  font-family:var(--body);font-weight:600;font-size:.95rem;padding:.7rem 1.35rem;border-radius:999px;
+  border:1.5px solid var(--volt);color:var(--volt);background:transparent;transition:all .25s ease}
+.cta:hover{background:var(--volt);color:#fff}
+
+/* THE LOOP — климакс: крупнее, подсвечен, ЕДИНСТВЕННАЯ ember-искра на CTA */
+.tier.climax{position:relative;margin-top:1.1rem;border-bottom:0;
+  padding:clamp(1.8rem,5vh,3rem) clamp(1.3rem,3vw,2rem);border:1.5px solid rgba(37,99,235,.4);
+  border-radius:18px;background:linear-gradient(180deg,rgba(37,99,235,.05),rgba(37,99,235,.012));
+  box-shadow:0 14px 44px rgba(16,21,29,.07)}
+.tier.climax .price{color:var(--volt)}
+.rec{position:absolute;top:-11px;left:clamp(1.3rem,3vw,2rem);font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.15em;text-transform:uppercase;color:#fff;background:var(--volt);
+  padding:.3rem .72rem;border-radius:999px}
+.pick{margin-top:1.15rem;padding:1rem 1.1rem;border-radius:12px;
+  background:rgba(232,165,75,.08);border:1px solid rgba(232,165,75,.32)}
+.pick .plead{font-family:var(--body);font-weight:600;color:var(--ztext);font-size:.98rem}
+.pick p{margin-top:.4rem;color:var(--zdim);font-size:.9rem;max-width:none}
+.payoff{margin-top:1.15rem;font-family:var(--disp);font-weight:700;letter-spacing:-.015em;
+  font-size:clamp(1.05rem,2.6vw,1.28rem);color:var(--ztext);line-height:1.25}
+.cta.ember{border:0;background:var(--ember);color:#1c1305;box-shadow:0 8px 26px rgba(232,165,75,.42)}
+.cta.ember:hover{background:#F0B45E;color:#1c1305}
+
+.vfoot{text-align:center;max-width:1040px;margin:clamp(2.4rem,7vh,4.2rem) auto 0;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;color:var(--zfaint);line-height:1.7}
+.vfoot b{color:var(--volt)}
+
+@media (max-width:760px){
+  .ptiers{grid-template-columns:1fr;gap:0}
+  /* мобайл: кольцо — чистая НЕПРОЗРАЧНАЯ плашка под лого HUD;
+     карточки уходят под неё без просвечивания (был оверлап) */
+  .pringcol{position:sticky;top:0;height:auto;z-index:3;
+    padding:calc(3.6rem + .4rem) 0 .85rem;background:var(--zbg);
+    box-shadow:0 12px 22px -14px rgba(16,21,29,.28)}
+  .pring{width:min(42vw,148px)}
+  .pword{font-size:1.02rem}
+  .pcyc{max-width:15ch}
+  .pcenter{padding:0 6%}
+  .tier{padding:clamp(1.9rem,6vh,3rem) 0}
+  .tier.climax{margin-top:1.6rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .pring.closed>svg{animation:none}
+  .tier,.pring .fil{transition:none}
+}
 </style>
 </head>
 <body>
@@ -306,7 +406,7 @@ body.light .hint,body.light .credits{opacity:0}
 </div>
 
 <div class="hint" id="hint">scroll</div>
-<div class="credits">Core-eye · scan + light zone<br>0 credits · Phase 2 prototype v3</div>
+<div class="credits">Core-eye · scan + light + packages<br>0 credits · Phase 2 prototype v4</div>
 
 <!-- ================= LIGHT ZONE: ЧТО МЫ ДЕЛАЕМ ================= -->
 <section class="zone" id="dowhat">
@@ -386,13 +486,106 @@ body.light .hint,body.light .credits{opacity:0}
   </div>
 </section>
 
+<!-- ================= PACKAGES: ПАКЕТЫ ================= -->
+<section class="zone zpack" id="packages">
+  <div class="zwrap">
+
+    <header class="zhead">
+      <div class="kicker">4 уровня — от «увидеть себя» до «отдел под ключ»</div>
+      <h2>Вот как мы <span class="sys">замкнём твой цикл</span></h2>
+      <p>Цену видно сразу. Начинаешь с любого уровня — с каждым круг закрывается
+         больше. Reality Check зачитывается в следующий пакет.</p>
+      <div class="pkgtag" id="pkgtag" hidden>план для <b id="pkgBiz"></b><span id="pkgCity"></span></div>
+    </header>
+
+    <div class="ptiers" id="ptiers">
+      <!-- общий круг-петля: закрывается по мере восхождения по тарифам -->
+      <div class="pringcol">
+        <div class="pring" id="pring">
+          <svg viewBox="0 0 240 240" aria-hidden="true">
+            <defs><linearGradient id="pgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#2563EB"/>
+            </linearGradient></defs>
+            <circle class="trk" cx="120" cy="120" r="100"/>
+            <circle class="fil" id="pfil" cx="120" cy="120" r="100" transform="rotate(-90 120 120)"/>
+          </svg>
+          <div class="pcenter">
+            <div class="pword" id="pword">твой цикл</div>
+            <div class="pcyc">найти · продать · обслужить · учиться&nbsp;⟳</div>
+            <div class="pnums" id="pnums">0% цикла</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tiercol">
+        <article class="tier" data-fill=".25" data-word="увидеть себя">
+          <div class="thead"><span class="pnum">уровень 01</span><span class="price">€300</span></div>
+          <h3>Reality Check</h3>
+          <div class="promise">Увидь себя глазами клиента</div>
+          <p><span class="rc" id="rcScore">Скор против 3 конкурентов</span> — полный аудит
+             видимости: карты, AI-поиск, соцсети, площадки. Отчёт с цифрами потерь и живой разбор.</p>
+          <ul class="feat"><li>аудит видимости везде</li><li>3 быстрых исправления</li>
+            <li>зачитывается в след. пакет</li></ul>
+          <a class="cta" data-pkg="Reality Check" href="#">Проверить видимость →</a>
+        </article>
+
+        <article class="tier" data-fill=".5" data-word="стать находимым">
+          <div class="thead"><span class="pnum">уровень 02</span><span class="price">€1 000</span></div>
+          <h3>Foundation</h3>
+          <div class="promise">Теперь тебя можно найти</div>
+          <p>Цифровой минимум под ключ: Google Business, сайт-одностраничник, порядок в соцсетях,
+             система отзывов, единые данные везде, база под AI-поиск.</p>
+          <ul class="feat"><li>Google Business</li><li>сайт</li><li>отзывы</li>
+            <li>единые данные</li><li>база под AI-поиск</li></ul>
+          <div class="vbadge">Grow Digital Voucher −50%</div>
+          <a class="cta" data-pkg="Foundation" href="#">Собрать основу →</a>
+        </article>
+
+        <article class="tier" data-fill=".75" data-word="пошёл поток">
+          <div class="thead"><span class="pnum">уровень 03</span><span class="price">€2 000+</span></div>
+          <h3>Growth System</h3>
+          <div class="promise">К тебе идёт поток</div>
+          <p>Система привлечения: полноценный сайт, контент-завод, воронка, CRM, автоматизация,
+             первые AI-агенты — заявки 24/7, ответы, follow-up.</p>
+          <ul class="feat"><li>полный сайт</li><li>контент-завод</li><li>воронка + CRM</li>
+            <li>первые AI-агенты</li><li>таргет FB · TikTok</li></ul>
+          <div class="vbadge">Grow Digital Voucher −50%</div>
+          <a class="cta" data-pkg="Growth System" href="#">Запустить поток →</a>
+        </article>
+
+        <article class="tier climax" data-fill="1" data-word="цикл замкнут">
+          <div class="rec">рекомендуем</div>
+          <div class="thead"><span class="pnum">уровень 04</span><span class="price">% от прибыли</span></div>
+          <h3>The Loop</h3>
+          <div class="promise">Твой цифровой отдел</div>
+          <p>Связка агентов замыкает цикл: найти → продать → обслужить → учиться.
+             Контент и реклама, отчёт раз в месяц на одной странице.</p>
+          <ul class="feat"><li>все 4 этапа под ключ</li><li>агенты + реклама</li>
+            <li>отчёт · 1 стр/мес</li></ul>
+          <div class="pick">
+            <div class="plead">Не знаешь свой уровень?</div>
+            <p>Назовёшь бюджет и что уже есть — соберём портфель под тебя.
+               Таргет FB · TikTok, модель обсуждается лично.</p>
+          </div>
+          <div class="payoff">Мы зарабатываем, только когда зарабатываешь ты.</div>
+          <a class="cta ember" data-pkg="The Loop" href="#">Поговорим — соберём под тебя →</a>
+        </article>
+      </div>
+    </div>
+
+    <div class="vfoot">Reality Check <b>зачитывается</b> в следующий пакет ·
+      <b>Grow Digital Voucher −50%</b> на Foundation и Growth System</div>
+
+  </div>
+</section>
+
 <script>
 "use strict";
 (function(){
   const canvas=document.getElementById("c"), ctx=canvas.getContext("2d");
   const reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
   const COL={accent:[91,155,255],volt:[37,99,235],steel:[58,114,196],ice:[158,196,255],
-             dead:[121,129,142],ember:[255,157,92]};
+             dead:[121,129,142],ember:[232,165,75]};
   const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
   const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -416,7 +609,7 @@ body.light .hint,body.light .credits{opacity:0}
   function readScroll(){
     if(typeof gateState!=="undefined" && gateState===1){window.scrollTo(0,lockY);return;}
     const m=scrollerEl.offsetHeight-window.innerHeight;
-    energyTarget=m>0?clamp(window.scrollY/m,0,1):0; lightScroll();}
+    energyTarget=m>0?clamp(window.scrollY/m,0,1):0; lightScroll(); packagesScroll();}
   window.addEventListener("scroll",readScroll,{passive:true});
 
   // ---------- scan state ----------
@@ -507,6 +700,7 @@ body.light .hint,body.light .credits{opacity:0}
     hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
     document.getElementById("hopeEm").textContent="развернуть на «"+b.slice(0,18)+"»";
     biz=b;city=c;
+    updatePkg();
     closeGate(true);
   });
   // скан стартует сразу по скроллу; гейт вооружён до момента прогрева
@@ -858,6 +1052,53 @@ body.light .hint,body.light .credits{opacity:0}
   }
   window.addEventListener("resize",lightScroll);
 
+  // ---------- PACKAGES: петля из светлой зоны ЗАКРЫВАЕТСЯ по тарифам ----------
+  const WA_NUM="";   // TODO Ф5: реальный ирландский WhatsApp (+353…)
+  const ptiers=Array.prototype.slice.call(document.querySelectorAll("#packages .tier")),
+        pring=document.getElementById("pring"),
+        pfil=document.getElementById("pfil"),
+        pword=document.getElementById("pword"),
+        pnums=document.getElementById("pnums");
+  const PCIRC=628.318;                 // 2π·100 — длина окружности кольца
+  function packagesScroll(){
+    if(!ptiers.length)return;
+    const vh=window.innerHeight;
+    let active=-1;
+    for(let i=0;i<ptiers.length;i++){
+      const r=ptiers[i].getBoundingClientRect();
+      ptiers[i].classList.toggle("on", r.top < vh*0.82 && r.bottom > vh*0.08);
+      if(r.top < vh*0.5) active=i;   // активен последний тариф, чей ВЕРХ прошёл середину экрана
+      // (монотонно, без провалов в зазорах; последний тариф гарантированно замыкает кольцо у низа)
+    }
+    const fill=active>=0?parseFloat(ptiers[active].dataset.fill):0;
+    pfil.style.strokeDashoffset=PCIRC*(1-fill);
+    pword.textContent=active>=0?ptiers[active].dataset.word:"твой цикл";
+    pnums.textContent=Math.round(fill*100)+"% цикла";
+    pring.classList.toggle("closed", fill>=0.999);
+  }
+  window.addEventListener("resize",packagesScroll);
+
+  // нить данных гейта: {biz}/{city} видимо работают в пакетах + WhatsApp-prefill
+  function updatePkg(){
+    const b=(biz && biz!=="твой бизнес")?biz.slice(0,26):"";
+    const c=(city||"").slice(0,22);
+    const tag=document.getElementById("pkgtag");
+    if(tag){
+      if(b){ document.getElementById("pkgBiz").textContent="«"+b+"»";
+             document.getElementById("pkgCity").textContent=c?" · "+c:"";
+             tag.hidden=false; }
+      else tag.hidden=true;
+    }
+    const rc=document.getElementById("rcScore");
+    if(rc) rc.textContent=b?("Проверим «"+b+"» против 3 конкурентов"):"Скор против 3 конкурентов";
+    const ctas=document.querySelectorAll("#packages .cta");
+    for(let i=0;i<ctas.length;i++){
+      const p=ctas[i].dataset.pkg||"";
+      const txt="Здравствуйте! Интересует "+p+(b?(" для «"+b+"»"):"")+(c?(", "+c):"")+". Расскажите подробнее.";
+      ctas[i].href="https://wa.me/"+WA_NUM+"?text="+encodeURIComponent(txt);
+    }
+  }
+
   let t0=null;
   function frame(ts){
     if(t0===null)t0=ts;const t=(ts-t0)/1000;
@@ -875,7 +1116,7 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.globalCompositeOperation="source-over";
     requestAnimationFrame(frame);
   }
-  resize();readScroll();lightScroll();requestAnimationFrame(frame);
+  resize();readScroll();lightScroll();packagesScroll();updatePkg();requestAnimationFrame(frame);
 })();
 </script>
 </body>
