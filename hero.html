@@ -200,8 +200,9 @@ body.light .hint,body.light .credits{opacity:0}
 }
 @media (max-width:640px){ .tagline{display:none} .credits{display:none} }
 @media (max-width:760px){
-  /* мобайл: «твой бизнес» внизу кольца — счётчик уходит под него */
-  .counter{bottom:1.9rem}
+  /* мобайл: отдельный счётчик внизу «не смотрится» (Влад) —
+     счёт живёт в подписи медальона, из центра */
+  .counter{display:none}
   .thread{left:17px;transform:none}
   .thread .spark{left:18px}
   .stage{grid-template-columns:44px 1fr;margin-bottom:clamp(3.2rem,8vh,5rem)}
@@ -540,7 +541,7 @@ body.light .hint,body.light .credits{opacity:0}
 
   // YOUR business = СИМВОЛ, не текст-плашка (фидбек Влада): круглый
   // медальон-объект с витриной внутри, исходит из ядра; подпись под ним
-  function youCard(x,y,appear,lit,label){
+  function youCard(x,y,appear,lit,label,themN){
     if(appear<=0.01)return;
     const rr=WIDE?36:31;
     ctx.globalCompositeOperation="source-over";
@@ -576,6 +577,12 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.font="500 10px IBM Plex Mono, monospace";
     ctx.fillStyle=rgba(lit>0.5?COL.accent:COL.dead,0.9*appear);
     ctx.fillText(lit>0.5?"виден в среде":"не найдено", x, y+rr+39);
+    // мобайл: счёт — третья строка подписи (вместо отдельного блока внизу)
+    if(!WIDE && lit<=0.5 && themN>0){
+      ctx.font="500 10.5px IBM Plex Mono, monospace";
+      ctx.fillStyle=rgba(COL.accent,0.8*appear);
+      ctx.fillText("нашли: их "+themN+" · тебя 0", x, y+rr+58);
+    }
     ctx.globalCompositeOperation="lighter";
   }
 
@@ -595,7 +602,8 @@ body.light .hint,body.light .credits{opacity:0}
     // your card — тоже исходит из ядра на свой слот кольца
     const youAppear=smooth(0.25,0.6,reveal)*intensity;
     const yp=ringPos(a, a.youAng, 0.22+0.78*smooth(0.25,0.6,reveal));
-    youCard(yp.x, yp.y, youAppear, hope, biz);
+    const themN=Math.round(smooth(0.1,0.45,energy)*12);
+    youCard(yp.x, yp.y, youAppear, hope, biz, themN);
 
     // searchers
     if(!reduced && intensity>0.15){
