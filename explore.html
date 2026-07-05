@@ -1,0 +1,339 @@
+<title>AIRE — Agent Core prototype</title>
+<style>
+/* ============================================================
+   AIRE — Agent Core, code prototype (Phase 1, 0 credits)
+   Web/Artifact build: fonts dropped (CSP blocks CDNs), system
+   stacks used. Graphite Current palette only. 4 form hypotheses:
+   A Spark · B Filament-brain · C Loop-current · D Iris.
+   Breathing (idle) + cursor reaction + scroll-driven state.
+   ============================================================ */
+:root{
+  --bg:#07080C; --panel:#0D1117; --card:#12161D;
+  --text:#E9ECF1; --dim:#98A0AC; --faint:#79818E;
+  --line:rgba(233,236,241,.14);
+  --accent:#5B9BFF; --volt:#2563EB; --steel:#3A72C4; --ice:#9EC4FF;
+  --ok:#5BC48F;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --body:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+#stage{position:fixed;inset:0;z-index:1}
+canvas{display:block;width:100%;height:100%}
+.scroller{position:relative;z-index:2;height:520vh;pointer-events:none}
+
+.hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;
+  align-items:center;gap:1rem;padding:1rem clamp(1rem,3vw,2rem);flex-wrap:wrap}
+.brand{font-family:var(--mono);font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.brand b{color:var(--text);font-weight:600}
+.modes{display:flex;gap:.35rem;background:rgba(13,17,23,.6);backdrop-filter:blur(12px);
+  border:1px solid var(--line);border-radius:999px;padding:.3rem}
+.modes button{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--dim);
+  background:none;border:0;padding:.5rem .85rem;border-radius:999px;cursor:pointer;transition:.18s;white-space:nowrap}
+.modes button:hover{color:var(--text)}
+.modes button.on{background:var(--volt);color:#fff;box-shadow:0 6px 20px -8px rgba(37,99,235,.7)}
+.modes button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.readout{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:1rem clamp(1rem,3vw,2rem);
+  display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap}
+.chapter{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--faint)}
+.chapter .now{display:block;font-size:1.5rem;letter-spacing:-.01em;color:var(--text);margin-top:.35rem;
+  font-family:var(--body);font-weight:600;text-transform:none}
+.chapter .role{color:var(--accent)}
+.meta{font-family:var(--mono);font-size:.68rem;color:var(--faint);text-align:right;line-height:1.7;font-variant-numeric:tabular-nums}
+.meta b{color:var(--accent);font-weight:500}
+.hint{position:fixed;left:50%;bottom:5.5rem;transform:translateX(-50%);z-index:20;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  animation:bob 2.4s ease-in-out infinite;text-align:center;width:90%}
+@keyframes bob{0%,100%{opacity:.4;transform:translate(-50%,0)}50%{opacity:.9;transform:translate(-50%,6px)}}
+.desc{position:fixed;top:5rem;left:clamp(1rem,3vw,2rem);z-index:20;max-width:34ch;
+  font-family:var(--mono);font-size:.7rem;line-height:1.7;color:var(--dim);pointer-events:none}
+.desc b{color:var(--accent);font-weight:500}
+@media (max-width:640px){.desc{display:none}.chapter .now{font-size:1.15rem}}
+@media (prefers-reduced-motion:reduce){.hint{animation:none}}
+</style>
+
+<div id="stage"><canvas id="c"></canvas></div>
+<div class="scroller"></div>
+
+<div class="hud">
+  <div class="brand">AIRE · <b>Agent Core</b> · prototype v0.1</div>
+  <div class="modes" id="modes">
+    <button data-mode="spark" class="on">A · Spark</button>
+    <button data-mode="brain">B · Brain</button>
+    <button data-mode="loop">C · Loop</button>
+    <button data-mode="iris">D · Iris</button>
+  </div>
+</div>
+
+<div class="desc" id="desc"></div>
+
+<div class="hint">scroll — прогони ядро через состояния</div>
+
+<div class="readout">
+  <div class="chapter">
+    <span>CHAPTER · <span class="role" id="role">СРЕДА</span></span>
+    <span class="now" id="chapterName">Ты попадаешь в среду</span>
+  </div>
+  <div class="meta">
+    energy <b id="mEnergy">0.00</b> · breath <b id="mBreath">0.00</b><br>
+    0 credits · pure canvas · Graphite Current
+  </div>
+</div>
+
+<script>
+"use strict";
+(function(){
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const reduced = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  const COL = {
+    bg:"#07080C", accent:[91,155,255], volt:[37,99,235],
+    steel:[58,114,196], ice:[158,196,255], dim:[152,160,172]
+  };
+  const rgba = (c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const mix = (a,b,t)=>[a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+
+  let W=0,H=0,DPR=1,CX=0,CY=0,R=0;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    CX = W/2; CY = H/2;
+    R = Math.min(W,H) * 0.20;
+  }
+  window.addEventListener("resize", resize);
+
+  const pointer = {x:0,y:0,tx:0,ty:0,active:false};
+  window.addEventListener("pointermove", e=>{
+    pointer.tx = e.clientX - CX; pointer.ty = e.clientY - CY; pointer.active = true;
+  });
+  window.addEventListener("pointerleave", ()=>{pointer.active=false;});
+
+  let energyTarget=0, energy=0;
+  function readScroll(){
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    energyTarget = max>0 ? Math.min(1, window.scrollY/max) : 0;
+  }
+  window.addEventListener("scroll", readScroll, {passive:true});
+
+  const CHAPTERS = [
+    {t:0.00, role:"СРЕДА",       name:"Ты попадаешь в среду"},
+    {t:0.22, role:"ПУСТОТА",     name:"Тебя ищут — тебя нет"},
+    {t:0.45, role:"ТРЕЗВОСТЬ",   name:"Вот что мы делаем"},
+    {t:0.68, role:"ПРОБУЖДЕНИЕ", name:"Агент оживает"},
+    {t:0.88, role:"ЧАТ",         name:"Говори со мной"}
+  ];
+  const elRole=document.getElementById("role"), elName=document.getElementById("chapterName");
+  let lastCh=-1;
+  function updateChapter(){
+    let i=0; for(let k=0;k<CHAPTERS.length;k++) if(energy>=CHAPTERS[k].t) i=k;
+    if(i!==lastCh){ elRole.textContent=CHAPTERS[i].role; elName.textContent=CHAPTERS[i].name; lastCh=i; }
+  }
+
+  const DESCS = {
+    spark:"<b>A · Spark.</b> Искра Gemini на нашем языке. Мягкое плазменное ядро с 4-лучевой вспышкой. Дышит; при пробуждении лучи вытягиваются и загораются volt.",
+    brain:"<b>B · Brain.</b> Плата-мозг из знака AIRE. Узлы-нейроны на дорожках-схемах, замкнутых в сферу. Скролл зажигает связи; курсор притягивает ближайшие узлы.",
+    loop:"<b>C · Loop.</b> Буквальный продукт: поток частиц бежит по замкнутой петле (∞). Чем выше энергия — тем быстрее и ярче ток. Курсор наклоняет плоскость петли.",
+    iris:"<b>D · Iris.</b> Глаз-диафрагма. Кольца и конический градиент вращаются, зрачок дышит и смотрит на курсор. Раскрывается в финале — рамка чата из DESIGN.md."
+  };
+  const elDesc=document.getElementById("desc");
+
+  const mE=document.getElementById("mEnergy"), mB=document.getElementById("mBreath");
+
+  const VALID=["spark","brain","loop","iris"];
+  const qForm=(new URLSearchParams(location.search).get("form")||"").toLowerCase();
+  let mode=VALID.includes(qForm)?qForm:"spark";     // per-form deep link: ?form=loop
+  const modeState={};
+
+  function buildBrain(){
+    const nodes=[]; const N = W<640?26:44;
+    for(let i=0;i<N;i++){
+      const ang = i*2.399963; const rad = Math.sqrt(i/N);
+      nodes.push({bx:Math.cos(ang)*rad, by:Math.sin(ang)*rad,
+        ph:Math.random()*6.283, sp:0.4+Math.random()*0.8, x:0,y:0});
+    }
+    modeState.brain={nodes};
+  }
+  function buildLoop(){
+    const parts=[]; const N = W<640?70:130;
+    for(let i=0;i<N;i++) parts.push({u:Math.random(), sp:0.15+Math.random()*0.25, w:0.4+Math.random()*0.9});
+    modeState.loop={parts};
+  }
+  buildBrain(); buildLoop();
+  window.addEventListener("resize", ()=>{buildBrain();buildLoop();});
+
+  function orb(x,y,r,c,a0){
+    if(r<=0)return;
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,rgba(c,a0)); g.addColorStop(0.4,rgba(c,a0*0.5));
+    g.addColorStop(1,rgba(c,0));
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+  }
+
+  function drawSpark(t,breath,px,py){
+    const col = mix(COL.accent, COL.volt, energy);
+    const cx=CX+px*0.06, cy=CY+py*0.06;
+    const base = R*(0.9+breath*0.12)*(0.85+energy*0.35);
+    orb(cx,cy, base*3.0, col, 0.05+energy*0.05);
+    orb(cx,cy, base*1.5, col, 0.12+energy*0.10);
+    const rot = reduced?0 : t*0.06;
+    const arms = 4;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
+    for(let k=0;k<arms;k++){
+      const a=(k/arms)*6.2832;
+      const len = base*(2.2+energy*1.6+breath*0.3);
+      const wid = base*(0.22+breath*0.05);
+      const gx=Math.cos(a), gy=Math.sin(a);
+      const grad=ctx.createLinearGradient(0,0,gx*len,gy*len);
+      grad.addColorStop(0,rgba(COL.ice,0.9)); grad.addColorStop(1,rgba(col,0));
+      ctx.fillStyle=grad;
+      ctx.beginPath();
+      ctx.moveTo(gx*len,gy*len);
+      ctx.lineTo(-gy*wid, gx*wid);
+      ctx.lineTo(-gx*len*0.12,-gy*len*0.12);
+      ctx.lineTo(gy*wid,-gx*wid);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    orb(cx,cy, base*0.7, COL.ice, 0.9);
+  }
+
+  function drawBrain(t,breath,px,py){
+    const S=modeState.brain; const col=mix(COL.steel,COL.accent,energy);
+    const spin = reduced?0 : t*0.05;
+    const scale = R*(1.35+energy*0.35)*(0.94+breath*0.06);
+    orb(CX,CY, scale*1.6, col, 0.06+energy*0.07);
+    const cs=Math.cos(spin), sn=Math.sin(spin);
+    for(const n of S.nodes){
+      const bx=n.bx, by=n.by;
+      const rx=bx*cs - by*sn, ry=bx*sn + by*cs;
+      const pulse=1+Math.sin(t*n.sp+n.ph)*0.05*(0.5+breath);
+      n.x=CX+rx*scale*pulse; n.y=CY+ry*scale*pulse;
+      if(pointer.active){
+        const dx=(CX+px)-n.x, dy=(CY+py)-n.y, d=Math.hypot(dx,dy);
+        if(d<scale*0.6){ n.x+=dx*0.12; n.y+=dy*0.12; }
+      }
+    }
+    const maxD=scale*0.5;
+    ctx.lineWidth=1;
+    for(let i=0;i<S.nodes.length;i++){
+      for(let j=i+1;j<S.nodes.length;j++){
+        const a=S.nodes[i], b=S.nodes[j];
+        const d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<maxD){
+          const al=(1-d/maxD)*(0.12+energy*0.35);
+          ctx.strokeStyle=rgba(col,al);
+          ctx.beginPath(); ctx.moveTo(a.x,a.y);
+          const mx=a.x+(b.x-a.x)*0.5;
+          ctx.lineTo(mx,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    for(const n of S.nodes){
+      const lit=0.4+energy*0.6;
+      orb(n.x,n.y, 6+energy*5, col, 0.5*lit);
+      ctx.fillStyle=rgba(COL.ice,0.85*lit);
+      ctx.beginPath(); ctx.arc(n.x,n.y,1.7,0,6.2832); ctx.fill();
+    }
+  }
+
+  function drawLoop(t,breath,px,py){
+    const S=modeState.loop; const col=mix(COL.accent,COL.volt,energy);
+    const rx=R*2.1*(0.9+breath*0.05), ry=R*1.05*(0.9+breath*0.05);
+    const tilt = pointer.active ? Math.max(-0.5,Math.min(0.5, px/W)) : 0;
+    orb(CX,CY, rx*1.1, col, 0.05+energy*0.05);
+    ctx.save(); ctx.translate(CX,CY); ctx.rotate(tilt*0.5);
+    const speed = (reduced?0.0:1)*(0.15+energy*0.9);
+    function pos(u){
+      const a=u*6.2832;
+      const k=1+Math.sin(a)*Math.sin(a);
+      return [rx*Math.cos(a)/k, ry*Math.sin(a)*Math.cos(a)/k*2];
+    }
+    ctx.strokeStyle=rgba(col,0.10+energy*0.12); ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let u=0;u<=1.001;u+=0.01){const p=pos(u); u===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]);}
+    ctx.stroke();
+    for(const pt of S.parts){
+      pt.u=(pt.u+pt.sp*speed*0.01)%1;
+      const p=pos(pt.u), pj=pos((pt.u-0.02+1)%1);
+      const grad=ctx.createLinearGradient(pj[0],pj[1],p[0],p[1]);
+      grad.addColorStop(0,rgba(col,0)); grad.addColorStop(1,rgba(COL.ice,0.7*(0.4+energy*0.6)));
+      ctx.strokeStyle=grad; ctx.lineWidth=pt.w*(1+energy);
+      ctx.beginPath(); ctx.moveTo(pj[0],pj[1]); ctx.lineTo(p[0],p[1]); ctx.stroke();
+      orb(p[0],p[1], 4+energy*4, col, 0.4);
+    }
+    ctx.restore();
+  }
+
+  function drawIris(t,breath,px,py){
+    const col=mix(COL.steel,COL.accent,energy);
+    const base=R*(1.6+energy*0.4)*(0.96+breath*0.05);
+    orb(CX,CY, base*1.5, col, 0.05+energy*0.06);
+    const rot=reduced?0:t*0.12;
+    if(ctx.createConicGradient){
+      const cg=ctx.createConicGradient(rot,CX,CY);
+      const c1=rgba(col,0.0), c2=rgba(col,0.28+energy*0.25), c3=rgba(COL.ice,0.2+energy*0.2);
+      cg.addColorStop(0,c1);cg.addColorStop(0.25,c2);cg.addColorStop(0.5,c1);
+      cg.addColorStop(0.75,c3);cg.addColorStop(1,c1);
+      ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(CX,CY,base,0,6.2832); ctx.fill();
+    }
+    ctx.lineCap="round";
+    for(let ring=0;ring<4;ring++){
+      const rr=base*(0.55+ring*0.16);
+      const segs=8+ring*3;
+      ctx.lineWidth=2+energy*1.5;
+      for(let s=0;s<segs;s++){
+        const a0=(s/segs)*6.2832 + rot*(ring%2?-1:1)*(1+ring*0.3);
+        const a1=a0+ (6.2832/segs)*0.55;
+        ctx.strokeStyle=rgba(col,0.18+energy*0.4*(1-ring/5));
+        ctx.beginPath(); ctx.arc(CX,CY,rr,a0,a1); ctx.stroke();
+      }
+    }
+    const look = pointer.active?0.10:0;
+    const pxp=CX+px*look, pyp=CY+py*look;
+    const pr=base*(0.30+energy*0.12)*(0.9+breath*0.15);
+    orb(pxp,pyp, pr*1.6, col, 0.35);
+    ctx.fillStyle=COL.bg; ctx.beginPath(); ctx.arc(pxp,pyp,pr,0,6.2832); ctx.fill();
+    orb(pxp,pyp, pr*0.7, COL.ice, 0.5+energy*0.4);
+  }
+
+  const DRAW={spark:drawSpark,brain:drawBrain,loop:drawLoop,iris:drawIris};
+
+  document.getElementById("modes").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    mode=b.dataset.mode;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x===b));
+    elDesc.innerHTML=DESCS[mode];
+  });
+  [...document.getElementById("modes").children].forEach(x=>x.classList.toggle("on",x.dataset.mode===mode));
+  elDesc.innerHTML=DESCS[mode];
+
+  let t0=null;
+  function frame(ts){
+    if(t0===null)t0=ts; const t=(ts-t0)/1000;
+    energy += (energyTarget-energy)*0.06;
+    pointer.x += (pointer.tx-pointer.x)*0.08;
+    pointer.y += (pointer.ty-pointer.y)*0.08;
+    if(!pointer.active){ pointer.x*=0.94; pointer.y*=0.94; }
+    const breath = reduced?0.4 : 0.5+0.5*Math.sin(t*0.9);
+
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation="lighter";
+    DRAW[mode](t,breath,pointer.x,pointer.y);
+    ctx.globalCompositeOperation="source-over";
+
+    updateChapter();
+    mE.textContent=energy.toFixed(2); mB.textContent=breath.toFixed(2);
+    requestAnimationFrame(frame);
+  }
+
+  resize(); readScroll(); requestAnimationFrame(frame);
+})();
+</script>
