@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIRE — Hero + Scan (Phase 2 prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;700;800&family=Besley:wght@800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AIRE — Phase 2 prototype: HERO + SCAN.
+   Core (Vortex + Möbius) stays centre; the market field
+   unfolds AROUND it. Input is embedded IN the core — you
+   speak straight into the agent. On submit (or auto-demo
+   after idle) the scan runs: competitor nodes ignite, the
+   flow of searchers streams to them, YOUR node exists but
+   stays dead, the flow passes it by. The hook line lands
+   after the hit; a spark of hope follows.
+   Graphite Current + a disciplined Agent Ember spark.
+   Pure canvas, 0 credits.
+   ============================================================ */
+:root{
+  --bg:#07080C; --panel:#0D1117;
+  --text:#E9ECF1; --dim:#98A0AC; --faint:#79818E;
+  --line:rgba(233,236,241,.14); --line-soft:rgba(233,236,241,.09);
+  --accent:#5B9BFF; --volt:#2563EB; --steel:#3A72C4; --ice:#9EC4FF;
+  --ember:#FF9D5C;            /* Agent Ember — rare living-agent spark only */
+  --disp:"Geist",system-ui,-apple-system,sans-serif;
+  --brand:"Besley",serif;
+  --body:"Public Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+/* film grain */
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+#stage{position:fixed;inset:0;z-index:1}
+canvas{display:block;width:100%;height:100%}
+.scroller{position:relative;z-index:2;height:300vh;pointer-events:none}
+
+/* ---- HUD ---- */
+.hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;
+  align-items:center;gap:1rem;padding:1.1rem clamp(1rem,3vw,2.2rem)}
+.logo{font-family:var(--brand);font-weight:800;font-size:1.3rem;letter-spacing:.02em;color:var(--text)}
+.tagline{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+/* ---- core input (embedded IN the agent) ---- */
+.coreui{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;
+  width:min(86vw,440px);text-align:center;pointer-events:none;transition:opacity .5s ease}
+.coreui .ask{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ember);opacity:.9;margin-bottom:1rem}
+.coreui form{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  border-bottom:1px solid rgba(255,157,92,.35);padding:.4rem .2rem;max-width:340px;margin:0 auto;
+  transition:border-color .3s ease}
+.coreui form:focus-within{border-color:rgba(255,157,92,.75)}
+.coreui input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
+  font-family:var(--body);font-size:1.02rem;text-align:center;caret-color:var(--ember)}
+.coreui input::placeholder{color:var(--faint)}
+.coreui button{background:transparent;border:0;cursor:pointer;color:var(--ember);
+  font-family:var(--mono);font-size:1.1rem;line-height:1;padding:.2rem .3rem}
+.coreui .sub{margin-top:.9rem;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--faint)}
+.coreui.gone{opacity:0;pointer-events:none}
+
+/* ---- narration lines over the scan ---- */
+.narr{position:fixed;left:0;right:0;z-index:21;text-align:center;pointer-events:none;
+  padding:0 1.4rem;opacity:0;transition:opacity .6s ease}
+.narr.hit{top:clamp(3.5rem,12vh,7rem)}
+.narr.hope{bottom:clamp(4rem,16vh,9rem)}
+.narr .kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:.7rem}
+.narr h2{font-family:var(--disp);font-weight:800;letter-spacing:-.028em;line-height:1.05;
+  font-size:clamp(1.9rem,6vw,3.4rem);color:var(--text);text-wrap:balance}
+.narr.hope h2{font-size:clamp(1.5rem,4.6vw,2.5rem)}
+.narr .em{color:var(--ember)}                 /* warm spark — hope / invite only */
+.narr .cold{color:var(--accent)}              /* cold verdict of the environment */
+.narr .stat{margin-top:.9rem;font-family:var(--mono);font-size:.76rem;letter-spacing:.04em;color:var(--dim)}
+.narr .stat b{color:var(--accent);font-weight:600}
+
+/* ---- scroll hint ---- */
+.hint{position:fixed;left:50%;bottom:1.6rem;transform:translateX(-50%);z-index:20;
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  animation:bob 2.4s ease-in-out infinite;text-align:center;transition:opacity .5s ease}
+@keyframes bob{0%,100%{opacity:.35;transform:translate(-50%,0)}50%{opacity:.85;transform:translate(-50%,6px)}}
+
+.credits{position:fixed;right:clamp(1rem,3vw,2.2rem);bottom:1.4rem;z-index:20;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--faint);text-align:right;line-height:1.7}
+
+@media (prefers-reduced-motion:reduce){.hint{animation:none}}
+@media (max-width:640px){
+  .tagline{display:none}
+  .credits{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="stage"><canvas id="c"></canvas></div>
+<div class="scroller"></div>
+
+<div class="hud">
+  <div class="logo">AIRE</div>
+  <div class="tagline">2026 → 2030 · digital decade</div>
+</div>
+
+<!-- input embedded in the core -->
+<div class="coreui" id="coreui">
+  <div class="ask">говори со мной</div>
+  <form id="askform" autocomplete="off">
+    <input id="askin" type="text" placeholder="твоё дело и город" maxlength="48" aria-label="your business and city">
+    <button type="submit" aria-label="scan">↵</button>
+  </form>
+  <div class="sub" id="sub">напиши — я покажу тебя в среде</div>
+</div>
+
+<!-- narration -->
+<div class="narr hit" id="nHit">
+  <div class="kicker" id="hitKicker">я искал тебя</div>
+  <h2>Тебя перестают <span class="cold">находить</span></h2>
+  <div class="stat" id="hitStat">нашёл <b>12</b> других · тебя — <b>нет</b></div>
+</div>
+<div class="narr hope" id="nHope">
+  <h2>Тот же поток можно <span class="em">развернуть на тебя</span></h2>
+</div>
+
+<div class="hint" id="hint">scroll</div>
+<div class="credits">Vortex + Möbius · Graphite Current<br>0 credits · Phase 2 prototype</div>
+
+<script>
+"use strict";
+(function(){
+  const canvas=document.getElementById("c"), ctx=canvas.getContext("2d");
+  const reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const COL={accent:[91,155,255],volt:[37,99,235],steel:[58,114,196],ice:[158,196,255],
+             dead:[120,129,142],ember:[255,157,92]};
+  const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+  const TAU=6.28318;
+
+  let W=0,H=0,DPR=1,CX=0,CY=0,R=0;
+  function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=canvas.clientWidth;H=canvas.clientHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+    CX=W/2;CY=H/2;R=Math.min(W,H)*0.19;}
+  window.addEventListener("resize",resize);
+
+  // pointer parallax + core reactivity
+  const pointer={x:0,y:0,tx:0,ty:0,active:false};
+  window.addEventListener("pointermove",e=>{pointer.tx=e.clientX-CX;pointer.ty=e.clientY-CY;pointer.active=true;});
+  window.addEventListener("pointerleave",()=>{pointer.active=false;});
+
+  // scroll energy
+  let energyTarget=0,energy=0;
+  function readScroll(){const m=document.documentElement.scrollHeight-window.innerHeight;
+    energyTarget=m>0?clamp(window.scrollY/m,0,1):0;}
+  window.addEventListener("scroll",readScroll,{passive:true});
+
+  // ---------- scan state ----------
+  let revealed=false, reveal=0;            // reveal eases 0..1 once triggered
+  let biz="", city="";
+  const NODES=[];                          // market field
+  function buildField(){
+    NODES.length=0;
+    const N = W<640 ? 9 : 13;
+    for(let i=0;i<N;i++){
+      const golden=2.399963;
+      const ang=i*golden + 0.6;
+      const dist=2.35 + (i%5)*0.42 + ((i*7)%3)*0.18;   // in units of R
+      NODES.push({ang, dist, lit:true, you:false, label:null, pulse:(i*0.137)%1});
+    }
+    // YOUR node — a prominent slot, upper-left of core, exists but dead
+    NODES[0].you=true; NODES[0].lit=false; NODES[0].ang=-2.35; NODES[0].dist=2.55;
+    // one competitor gets a ghost city-echo label (set on trigger)
+    NODES[5].label="•";
+  }
+  buildField(); window.addEventListener("resize",buildField);
+
+  function nodePos(n){return {x:CX+Math.cos(n.ang)*n.dist*R, y:CY+Math.sin(n.ang)*n.dist*R};}
+
+  // flow of "searchers" streaming toward lit competitors
+  const FLOW=[];
+  function spawnFlow(){
+    const lit=NODES.filter(n=>n.lit);
+    if(!lit.length)return;
+    const target=lit[(Math.random()*lit.length)|0];
+    const a=Math.random()*TAU, rad=(4.6+Math.random()*1.2)*R;
+    FLOW.push({sx:CX+Math.cos(a)*rad, sy:CY+Math.sin(a)*rad, t:0,
+      sp:0.006+Math.random()*0.006, node:target, bypass:false});
+  }
+  function spawnBypass(){                    // a searcher that heads for YOUR node then veers off
+    const you=NODES[0];
+    const a=you.ang+(Math.random()-0.5)*0.5, rad=(4.6+Math.random()*0.8)*R;
+    FLOW.push({sx:CX+Math.cos(a)*rad, sy:CY+Math.sin(a)*rad, t:0,
+      sp:0.006+Math.random()*0.005, node:you, bypass:true});
+  }
+
+  function trigger(b,c,demo){
+    revealed=true;
+    if(b){biz=b;city=c||"";}
+    NODES[5].label = city ? city : "рядом";
+    coreui.classList.add("gone");
+    hint.textContent="scroll — смотри, что происходит";
+  }
+
+  // ---------- input wiring ----------
+  const coreui=document.getElementById("coreui");
+  const askform=document.getElementById("askform");
+  const askin=document.getElementById("askin");
+  const sub=document.getElementById("sub");
+  const hint=document.getElementById("hint");
+  const nHit=document.getElementById("nHit");
+  const nHope=document.getElementById("nHope");
+  const hitKicker=document.getElementById("hitKicker");
+  const hitStat=document.getElementById("hitStat");
+
+  let interacted=false;
+  askin.addEventListener("focus",()=>{interacted=true;});
+  askin.addEventListener("input",()=>{interacted=true;});
+  askform.addEventListener("submit",e=>{
+    e.preventDefault();
+    const raw=askin.value.trim();
+    if(!raw){askin.focus();return;}
+    let b=raw, c="";
+    const m=raw.split(/[,·|]/);
+    if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
+    hitKicker.textContent = "я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
+    trigger(b,c,false);
+    setTimeout(()=>window.scrollTo({top:window.innerHeight*0.9,behavior:"smooth"}),450);
+  });
+
+  // auto-demo after idle
+  setTimeout(()=>{
+    if(!interacted && !revealed){
+      hitKicker.textContent="я искал кофейню в Дублине";
+      sub.textContent="демо — или напиши своё";
+      trigger("кофейня","Дублин",true);
+    }
+  }, 4800);
+
+  // ---------- drawing ----------
+  function orb(x,y,r,c,a){if(r<=0||a<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,rgba(c,a));g.addColorStop(0.4,rgba(c,a*0.5));g.addColorStop(1,rgba(c,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}
+
+  function rotX(p,c,s){return [p[0],c*p[1]-s*p[2],s*p[1]+c*p[2]];}
+  function rotY(p,c,s){return [c*p[0]+s*p[2],p[1],-s*p[0]+c*p[2]];}
+
+  const ARMS=3, VP=[], MP=[];
+  function buildCore(){
+    VP.length=0;const nv=W<640?110:220;
+    for(let i=0;i<nv;i++)VP.push({u:Math.pow((i+0.5)/nv,0.7),arm:i%ARMS,jit:((i*0.37)%1-0.5)*0.16});
+    MP.length=0;const nm=W<640?46:80;
+    for(let i=0;i<nm;i++)MP.push({u:(i*0.113)%1,sp:0.6+((i*0.29)%1)*0.7});
+  }
+  buildCore();window.addEventListener("resize",buildCore);
+
+  function drawField(t,intensity){
+    if(intensity<=0.001)return;
+    for(const n of NODES){
+      const p=nodePos(n);
+      if(n.you){
+        // YOUR node — exists but dead: dim steel dot, faint ring, no glow
+        ctx.strokeStyle=rgba(COL.dead,0.34*intensity);ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(p.x,p.y,7,0,TAU);ctx.stroke();
+        ctx.fillStyle=rgba(COL.dead,0.5*intensity);
+        ctx.beginPath();ctx.arc(p.x,p.y,2.4,0,TAU);ctx.fill();
+        ctx.globalCompositeOperation="source-over";
+        ctx.font="600 11px IBM Plex Mono, monospace";
+        ctx.fillStyle=rgba(COL.dead,0.75*intensity);ctx.textAlign="center";
+        ctx.fillText("ты", p.x, p.y-15);
+        ctx.globalCompositeOperation="lighter";
+      }else{
+        const pulse=0.55+0.45*Math.sin(t*1.6+n.pulse*TAU);
+        const rr=4+pulse*2.2;
+        orb(p.x,p.y,rr*3.4,COL.accent,0.10*intensity*pulse);
+        orb(p.x,p.y,rr,COL.ice,0.55*intensity);
+        if(n.label){
+          ctx.globalCompositeOperation="source-over";
+          ctx.font="500 9.5px IBM Plex Mono, monospace";
+          ctx.fillStyle=rgba(COL.accent,0.55*intensity);ctx.textAlign="center";
+          ctx.fillText(n.label, p.x, p.y-13);
+          ctx.globalCompositeOperation="lighter";
+        }
+      }
+    }
+    // flow of searchers
+    const rate = intensity>0.5 ? 3 : 1;
+    if(!reduced){
+      for(let k=0;k<rate;k++){ if(Math.random()<intensity*0.6) spawnFlow(); }
+      if(Math.random()<intensity*0.22) spawnBypass();
+    }
+    for(let i=FLOW.length-1;i>=0;i--){
+      const f=FLOW[i];
+      f.t+=f.sp*(reduced?0.0:1);
+      if(f.t>=1){FLOW.splice(i,1);continue;}
+      const tgt=nodePos(f.node);
+      const ease=f.t;
+      let px,py;
+      if(f.bypass){
+        const veer=smooth(0.55,1,f.t);
+        const off=veer*R*1.3;
+        const nx=Math.cos(f.node.ang+1.6)*off, ny=Math.sin(f.node.ang+1.6)*off;
+        px=f.sx+(tgt.x-f.sx)*ease+nx;
+        py=f.sy+(tgt.y-f.sy)*ease+ny;
+      }else{
+        px=f.sx+(tgt.x-f.sx)*ease;
+        py=f.sy+(tgt.y-f.sy)*ease;
+      }
+      const a=(f.bypass?0.28:0.5)*intensity*(1-Math.abs(f.t-0.5)*1.3);
+      const c=f.bypass?COL.dead:COL.accent;
+      orb(px,py,2.6,c,clamp(a,0,1));
+    }
+  }
+
+  function drawCore(t,breath){
+    const col=mix(COL.accent,COL.volt,energy);
+    const ox=CX+pointer.x*0.05, oy=CY+pointer.y*0.05;
+
+    // MÖBIUS loop
+    const Rm=R*1.95*(0.97+breath*0.03);
+    const bw=R*0.34, f=R*7.5;
+    const tiltC=Math.cos(1.02), tiltS=Math.sin(1.02);
+    const spin=reduced?0:t*0.32, spinC=Math.cos(spin), spinS=Math.sin(spin);
+    const project=p=>{let q=rotX(p,tiltC,tiltS);q=rotY(q,spinC,spinS);const s=f/(f-q[2]);return [ox+q[0]*s, oy+q[1]*s, q[2]];};
+    function pt(theta,sign){const ct=Math.cos(theta),st=Math.sin(theta),h=theta*0.5;
+      const dR=Math.cos(h), dN=Math.sin(h);
+      return project([Rm*ct+sign*bw*dR*ct, Rm*st+sign*bw*dR*st, sign*bw*dN]);}
+    const STEPS=96, A=[],B=[];
+    for(let i=0;i<=STEPS;i++){const th=i/STEPS*TAU;A.push(pt(th,1));B.push(pt(th,-1));}
+    for(let i=0;i<STEPS;i++){
+      const zavg=(A[i][2]+B[i][2]+A[i+1][2]+B[i+1][2])/4;
+      const depth=clamp((zavg/(bw+Rm)+1)/2,0,1);
+      ctx.fillStyle=rgba(col,(0.03+0.10*depth)*(0.6+energy*0.5));
+      ctx.beginPath();ctx.moveTo(A[i][0],A[i][1]);ctx.lineTo(A[i+1][0],A[i+1][1]);
+      ctx.lineTo(B[i+1][0],B[i+1][1]);ctx.lineTo(B[i][0],B[i][1]);ctx.closePath();ctx.fill();
+    }
+    ctx.lineWidth=1.4;ctx.strokeStyle=rgba(col,0.28+energy*0.25);
+    ctx.beginPath();for(let i=0;i<=STEPS;i++)i?ctx.lineTo(A[i][0],A[i][1]):ctx.moveTo(A[i][0],A[i][1]);ctx.stroke();
+    ctx.beginPath();for(let i=0;i<=STEPS;i++)i?ctx.lineTo(B[i][0],B[i][1]):ctx.moveTo(B[i][0],B[i][1]);ctx.stroke();
+    const mspeed=(reduced?0:1)*(0.4+energy*0.9);
+    for(const p of MP){
+      p.u=(p.u+p.sp*mspeed*0.0016)%1;
+      const q=pt(p.u*TAU,0), qj=pt(p.u*TAU-0.06,0);
+      const g=ctx.createLinearGradient(qj[0],qj[1],q[0],q[1]);
+      g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.8*(0.5+energy*0.5)));
+      ctx.strokeStyle=g;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(qj[0],qj[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
+      orb(q[0],q[1],3+energy*3,col,0.4);
+    }
+
+    // VORTEX core
+    const maxR=R*1.15*(0.97+breath*0.03);
+    const tighten=1-0.5*energy, turns=2.0+energy*1.1;
+    const vrot=reduced?0:t*(0.2+energy*0.6);
+    for(const p of VP){
+      const rad=maxR*p.u*tighten;
+      const ang=p.arm/ARMS*TAU+p.u*turns*TAU+vrot+p.jit;
+      const x=ox+Math.cos(ang)*rad, y=oy+Math.sin(ang)*rad;
+      const ang2=ang-0.07, x2=ox+Math.cos(ang2)*rad, y2=oy+Math.sin(ang2)*rad;
+      const bright=(1-p.u*0.7);
+      const g=ctx.createLinearGradient(x2,y2,x,y);
+      g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.55*bright*(0.5+energy*0.5)));
+      ctx.strokeStyle=g;ctx.lineWidth=(0.6+bright*1.3)*(1+energy*0.5);
+      ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x,y);ctx.stroke();
+    }
+    const focus=(0.10+0.5*energy)*R*(0.9+breath*0.15);
+    // living ember glint while it awaits input (fades once revealed)
+    const emberGlow=(1-reveal)*(0.5+0.5*Math.sin(t*0.9));
+    if(emberGlow>0.02) orb(ox,oy,focus*2.0,COL.ember,0.10*emberGlow);
+    orb(ox,oy,focus*2.4,col,0.22+energy*0.4);
+    orb(ox,oy,focus,COL.ice,0.5+energy*0.45);
+  }
+
+  // ---------- narration opacity by energy ----------
+  function narrate(){
+    const base = revealed ? 1 : 0;
+    const scanTarget = base * (0.4 + 0.6*smooth(0.02,0.34,energy));
+    reveal += (scanTarget - reveal)*0.05;
+
+    nHit.style.opacity = revealed ? smooth(0.18,0.34,energy)*(1-smooth(0.5,0.62,energy)) : 0;
+    nHope.style.opacity = revealed ? smooth(0.5,0.66,energy) : 0;
+    hint.style.opacity = energy>0.6 ? 0 : 1;
+    return reveal;
+  }
+
+  let t0=null;
+  function frame(ts){
+    if(t0===null)t0=ts;const t=(ts-t0)/1000;
+    energy+=(energyTarget-energy)*0.06;
+    pointer.x+=(pointer.tx-pointer.x)*0.08;pointer.y+=(pointer.ty-pointer.y)*0.08;
+    if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
+    const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
+    const intensity=narrate();
+
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation="lighter";
+    drawField(t,intensity);
+    drawCore(t,breath);
+    ctx.globalCompositeOperation="source-over";
+    requestAnimationFrame(frame);
+  }
+  resize();readScroll();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
