@@ -788,8 +788,9 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.font="500 10px IBM Plex Mono, monospace";
     ctx.fillStyle=rgba(lit>0.5?COL.accent:COL.dead,0.9*appear);
     ctx.fillText(lit>0.5?"виден в среде":"не найдено", x, y+rr+39);
-    // счёт — третья строка подписи медальона (единый паттерн на всех ширинах)
-    if(lit<=0.5 && themN>0){
+    // счёт — третья строка подписи медальона ТОЛЬКО на мобиле (там большой
+    // DOM-счётчик скрыт); на десктопе счёт живёт в большом счётчике — без дублей
+    if(!WIDE && lit<=0.5 && themN>0){
       ctx.font="500 10.5px IBM Plex Mono, monospace";
       ctx.fillStyle=rgba(COL.accent,0.8*appear);
       ctx.fillText("нашли: их "+themN+" · тебя 0", x, y+rr+58);
