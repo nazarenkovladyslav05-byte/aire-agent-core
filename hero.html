@@ -3,28 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIRE — Hero + Scan (Phase 2 prototype)</title>
+<title>AIRE — Hero + Scan v2 (Phase 2 prototype)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;700;800&family=Besley:wght@800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   AIRE — Phase 2 prototype: HERO + SCAN.
-   Core (Vortex + Möbius) stays centre; the market field
-   unfolds AROUND it. Input is embedded IN the core — you
-   speak straight into the agent. On submit (or auto-demo
-   after idle) the scan runs: competitor nodes ignite, the
-   flow of searchers streams to them, YOUR node exists but
-   stays dead, the flow passes it by. The hook line lands
-   after the hit; a spark of hope follows.
-   Graphite Current + a disciplined Agent Ember spark.
-   Pure canvas, 0 credits.
+   AIRE — Phase 2 prototype: HERO + SCAN v2.
+   Legible head-to-head scan. The core is an EYE (зрачок):
+     hero  — a calm breathing orb, input embedded in it
+     scan  — opens like an aperture, casts competitor CARDS out
+     hit   — contracts, darkens, watches the emptiness
+     hope  — flares, sends a beam to YOUR empty card → it lights ✓
+   Competitors = glowing pin-cards with a check, searchers stream
+   to them. YOUR card = grey, empty, «твой бизнес · не найдено» —
+   nobody comes. A live counter drives the point home.
+   Graphite Current + a disciplined Agent Ember spark. 0 credits.
    ============================================================ */
 :root{
   --bg:#07080C; --panel:#0D1117;
   --text:#E9ECF1; --dim:#98A0AC; --faint:#79818E;
   --line:rgba(233,236,241,.14); --line-soft:rgba(233,236,241,.09);
   --accent:#5B9BFF; --volt:#2563EB; --steel:#3A72C4; --ice:#9EC4FF;
+  --dead:#79818E;
   --ember:#FF9D5C;            /* Agent Ember — rare living-agent spark only */
   --disp:"Geist",system-ui,-apple-system,sans-serif;
   --brand:"Besley",serif;
@@ -34,21 +35,19 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
-/* film grain */
 body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
 #stage{position:fixed;inset:0;z-index:1}
 canvas{display:block;width:100%;height:100%}
-.scroller{position:relative;z-index:2;height:300vh;pointer-events:none}
+.scroller{position:relative;z-index:2;height:320vh;pointer-events:none}
 
-/* ---- HUD ---- */
 .hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;
   align-items:center;gap:1rem;padding:1.1rem clamp(1rem,3vw,2.2rem)}
 .logo{font-family:var(--brand);font-weight:800;font-size:1.3rem;letter-spacing:.02em;color:var(--text)}
 .tagline{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
 
-/* ---- core input (embedded IN the agent) ---- */
+/* input embedded IN the core */
 .coreui{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;
   width:min(86vw,440px);text-align:center;pointer-events:none;transition:opacity .5s ease}
 .coreui .ask{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
@@ -65,22 +64,29 @@ canvas{display:block;width:100%;height:100%}
 .coreui .sub{margin-top:.9rem;font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--faint)}
 .coreui.gone{opacity:0;pointer-events:none}
 
-/* ---- narration lines over the scan ---- */
+/* narration */
 .narr{position:fixed;left:0;right:0;z-index:21;text-align:center;pointer-events:none;
-  padding:0 1.4rem;opacity:0;transition:opacity .6s ease}
-.narr.hit{top:clamp(3.5rem,12vh,7rem)}
-.narr.hope{bottom:clamp(4rem,16vh,9rem)}
+  padding:0 1.4rem;opacity:0;transition:opacity .5s ease}
+.narr.hit{top:clamp(3.2rem,10vh,6rem)}
+.narr.hope{bottom:clamp(3rem,12vh,7rem)}
 .narr .kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--faint);margin-bottom:.7rem}
-.narr h2{font-family:var(--disp);font-weight:800;letter-spacing:-.028em;line-height:1.05;
+.narr h2{font-family:var(--disp);font-weight:800;letter-spacing:-.028em;line-height:1.04;
   font-size:clamp(1.9rem,6vw,3.4rem);color:var(--text);text-wrap:balance}
 .narr.hope h2{font-size:clamp(1.5rem,4.6vw,2.5rem)}
-.narr .em{color:var(--ember)}                 /* warm spark — hope / invite only */
-.narr .cold{color:var(--accent)}              /* cold verdict of the environment */
-.narr .stat{margin-top:.9rem;font-family:var(--mono);font-size:.76rem;letter-spacing:.04em;color:var(--dim)}
-.narr .stat b{color:var(--accent);font-weight:600}
+.narr .em{color:var(--ember)}       /* warm spark — hope / invite only */
+.narr .cold{color:var(--accent)}    /* cold verdict of the environment */
 
-/* ---- scroll hint ---- */
+/* live counter */
+.counter{position:fixed;left:50%;bottom:clamp(6.5rem,20vh,11rem);transform:translateX(-50%);z-index:21;
+  display:flex;gap:clamp(1.4rem,6vw,3rem);align-items:center;opacity:0;transition:opacity .5s ease;pointer-events:none}
+.counter .cell{text-align:center}
+.counter .num{font-family:var(--disp);font-weight:800;font-size:clamp(1.7rem,5vw,2.6rem);line-height:1;letter-spacing:-.02em}
+.counter .num.them{color:var(--accent)}
+.counter .num.you{color:var(--dead)}
+.counter .lab{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:.5rem}
+.counter .vs{font-family:var(--mono);font-size:.7rem;color:var(--faint);letter-spacing:.1em}
+
 .hint{position:fixed;left:50%;bottom:1.6rem;transform:translateX(-50%);z-index:20;
   font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
   animation:bob 2.4s ease-in-out infinite;text-align:center;transition:opacity .5s ease}
@@ -90,10 +96,7 @@ canvas{display:block;width:100%;height:100%}
   font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--faint);text-align:right;line-height:1.7}
 
 @media (prefers-reduced-motion:reduce){.hint{animation:none}}
-@media (max-width:640px){
-  .tagline{display:none}
-  .credits{display:none}
-}
+@media (max-width:640px){ .tagline{display:none} .credits{display:none} }
 </style>
 </head>
 <body>
@@ -106,28 +109,31 @@ canvas{display:block;width:100%;height:100%}
   <div class="tagline">2026 → 2030 · digital decade</div>
 </div>
 
-<!-- input embedded in the core -->
 <div class="coreui" id="coreui">
   <div class="ask">говори со мной</div>
   <form id="askform" autocomplete="off">
     <input id="askin" type="text" placeholder="твоё дело и город" maxlength="48" aria-label="your business and city">
     <button type="submit" aria-label="scan">↵</button>
   </form>
-  <div class="sub" id="sub">напиши — я покажу тебя в среде</div>
+  <div class="sub" id="sub">напиши — я покажу твой бизнес в среде</div>
 </div>
 
-<!-- narration -->
 <div class="narr hit" id="nHit">
-  <div class="kicker" id="hitKicker">я искал тебя</div>
+  <div class="kicker" id="hitKicker">я искал твой бизнес</div>
   <h2>Тебя перестают <span class="cold">находить</span></h2>
-  <div class="stat" id="hitStat">нашёл <b>12</b> других · тебя — <b>нет</b></div>
 </div>
 <div class="narr hope" id="nHope">
   <h2>Тот же поток можно <span class="em">развернуть на тебя</span></h2>
 </div>
 
+<div class="counter" id="counter">
+  <div class="cell"><div class="num them" id="cThem">0</div><div class="lab">нашли конкурентов</div></div>
+  <div class="vs">/</div>
+  <div class="cell"><div class="num you" id="cYou">0</div><div class="lab">нашли тебя</div></div>
+</div>
+
 <div class="hint" id="hint">scroll</div>
-<div class="credits">Vortex + Möbius · Graphite Current<br>0 credits · Phase 2 prototype</div>
+<div class="credits">Core-eye · head-to-head scan<br>0 credits · Phase 2 prototype v2</div>
 
 <script>
 "use strict";
@@ -135,254 +141,313 @@ canvas{display:block;width:100%;height:100%}
   const canvas=document.getElementById("c"), ctx=canvas.getContext("2d");
   const reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
   const COL={accent:[91,155,255],volt:[37,99,235],steel:[58,114,196],ice:[158,196,255],
-             dead:[120,129,142],ember:[255,157,92]};
+             dead:[121,129,142],ember:[255,157,92]};
   const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
   const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const clamp=(v,a,b)=>v<a?a:v>b?b:v;
   const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
   const TAU=6.28318;
 
-  let W=0,H=0,DPR=1,CX=0,CY=0,R=0;
+  let W=0,H=0,DPR=1,CX=0,CY=0,R=0,WIDE=true;
   function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=canvas.clientWidth;H=canvas.clientHeight;
     canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
-    CX=W/2;CY=H/2;R=Math.min(W,H)*0.19;}
+    CX=W/2;CY=H/2;R=Math.min(W,H)*0.16;WIDE=W>=760;}
   window.addEventListener("resize",resize);
 
-  // pointer parallax + core reactivity
   const pointer={x:0,y:0,tx:0,ty:0,active:false};
   window.addEventListener("pointermove",e=>{pointer.tx=e.clientX-CX;pointer.ty=e.clientY-CY;pointer.active=true;});
   window.addEventListener("pointerleave",()=>{pointer.active=false;});
 
-  // scroll energy
   let energyTarget=0,energy=0;
   function readScroll(){const m=document.documentElement.scrollHeight-window.innerHeight;
     energyTarget=m>0?clamp(window.scrollY/m,0,1):0;}
   window.addEventListener("scroll",readScroll,{passive:true});
 
   // ---------- scan state ----------
-  let revealed=false, reveal=0;            // reveal eases 0..1 once triggered
-  let biz="", city="";
-  const NODES=[];                          // market field
-  function buildField(){
-    NODES.length=0;
-    const N = W<640 ? 9 : 13;
-    for(let i=0;i<N;i++){
-      const golden=2.399963;
-      const ang=i*golden + 0.6;
-      const dist=2.35 + (i%5)*0.42 + ((i*7)%3)*0.18;   // in units of R
-      NODES.push({ang, dist, lit:true, you:false, label:null, pulse:(i*0.137)%1});
-    }
-    // YOUR node — a prominent slot, upper-left of core, exists but dead
-    NODES[0].you=true; NODES[0].lit=false; NODES[0].ang=-2.35; NODES[0].dist=2.55;
-    // one competitor gets a ghost city-echo label (set on trigger)
-    NODES[5].label="•";
+  let revealed=false, reveal=0;
+  let biz="твой бизнес", city="";
+  const NCARD = 5;
+  const CARDS=[];                          // competitor cards
+  function seedCards(){
+    CARDS.length=0;
+    // fixed pseudo-scatter offsets around the "them" anchor (units of R)
+    const off=[[-0.2,-1.7],[0.9,-0.55],[-1.05,0.15],[0.55,0.95],[-0.35,1.75]];
+    for(let i=0;i<NCARD;i++) CARDS.push({ox:off[i][0], oy:off[i][1], appear:0, pulse:(i*0.21)%1});
   }
-  buildField(); window.addEventListener("resize",buildField);
+  seedCards();
 
-  function nodePos(n){return {x:CX+Math.cos(n.ang)*n.dist*R, y:CY+Math.sin(n.ang)*n.dist*R};}
+  // layout anchors (them cluster / you card) — recomputed per frame
+  function anchors(){
+    if(WIDE) return {them:{x:CX-R*3.4,y:CY+R*0.2}, you:{x:CX+R*3.5,y:CY+R*0.2}, spread:R*1.15, sx:1, sy:1};
+    // mobile: competitors in a compact band above the eye (clear of the H2), you below
+    return {them:{x:CX,y:CY-R*2.5}, you:{x:CX,y:CY+R*3.3}, spread:R*1.2, sx:1.45, sy:0.5};
+  }
 
-  // flow of "searchers" streaming toward lit competitors
+  // searchers streaming to competitors (redirect to YOU on hope)
   const FLOW=[];
-  function spawnFlow(){
-    const lit=NODES.filter(n=>n.lit);
-    if(!lit.length)return;
-    const target=lit[(Math.random()*lit.length)|0];
-    const a=Math.random()*TAU, rad=(4.6+Math.random()*1.2)*R;
-    FLOW.push({sx:CX+Math.cos(a)*rad, sy:CY+Math.sin(a)*rad, t:0,
-      sp:0.006+Math.random()*0.006, node:target, bypass:false});
-  }
-  function spawnBypass(){                    // a searcher that heads for YOUR node then veers off
-    const you=NODES[0];
-    const a=you.ang+(Math.random()-0.5)*0.5, rad=(4.6+Math.random()*0.8)*R;
-    FLOW.push({sx:CX+Math.cos(a)*rad, sy:CY+Math.sin(a)*rad, t:0,
-      sp:0.006+Math.random()*0.005, node:you, bypass:true});
+  function spawnFlow(toYou){
+    const a=anchors();
+    const src={x:CX+(Math.random()*2-1)*W*0.55, y:CY+(Math.random()*2-1)*H*0.55};
+    let tgt;
+    if(toYou){ tgt={x:a.you.x,y:a.you.y}; }
+    else{ const c=CARDS[(Math.random()*CARDS.length)|0]; tgt={x:a.them.x+c.ox*a.spread*a.sx, y:a.them.y+c.oy*a.spread*a.sy}; }
+    FLOW.push({sx:src.x,sy:src.y,tx:tgt.x,ty:tgt.y,t:0,sp:0.012+Math.random()*0.01,you:!!toYou});
   }
 
   function trigger(b,c,demo){
     revealed=true;
     if(b){biz=b;city=c||"";}
-    NODES[5].label = city ? city : "рядом";
     coreui.classList.add("gone");
     hint.textContent="scroll — смотри, что происходит";
   }
 
-  // ---------- input wiring ----------
-  const coreui=document.getElementById("coreui");
-  const askform=document.getElementById("askform");
-  const askin=document.getElementById("askin");
-  const sub=document.getElementById("sub");
-  const hint=document.getElementById("hint");
-  const nHit=document.getElementById("nHit");
-  const nHope=document.getElementById("nHope");
-  const hitKicker=document.getElementById("hitKicker");
-  const hitStat=document.getElementById("hitStat");
+  // ---------- input ----------
+  const coreui=document.getElementById("coreui"),askform=document.getElementById("askform"),
+        askin=document.getElementById("askin"),sub=document.getElementById("sub"),hint=document.getElementById("hint"),
+        nHit=document.getElementById("nHit"),nHope=document.getElementById("nHope"),
+        hitKicker=document.getElementById("hitKicker"),counter=document.getElementById("counter"),
+        cThem=document.getElementById("cThem"),cYou=document.getElementById("cYou");
 
   let interacted=false;
-  askin.addEventListener("focus",()=>{interacted=true;});
-  askin.addEventListener("input",()=>{interacted=true;});
+  askin.addEventListener("focus",()=>interacted=true);
+  askin.addEventListener("input",()=>interacted=true);
   askform.addEventListener("submit",e=>{
     e.preventDefault();
-    const raw=askin.value.trim();
-    if(!raw){askin.focus();return;}
-    let b=raw, c="";
-    const m=raw.split(/[,·|]/);
+    const raw=askin.value.trim(); if(!raw){askin.focus();return;}
+    let b=raw,c=""; const m=raw.split(/[,·|]/);
     if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
-    hitKicker.textContent = "я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
+    hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
     trigger(b,c,false);
-    setTimeout(()=>window.scrollTo({top:window.innerHeight*0.9,behavior:"smooth"}),450);
+    setTimeout(()=>window.scrollTo({top:window.innerHeight*0.95,behavior:"smooth"}),450);
   });
+  setTimeout(()=>{ if(!interacted&&!revealed){
+    hitKicker.textContent="я искал кофейню в Дублине"; sub.textContent="демо — или напиши своё";
+    trigger("кофейня","Дублин",true);
+  }}, 4800);
 
-  // auto-demo after idle
-  setTimeout(()=>{
-    if(!interacted && !revealed){
-      hitKicker.textContent="я искал кофейню в Дублине";
-      sub.textContent="демо — или напиши своё";
-      trigger("кофейня","Дублин",true);
-    }
-  }, 4800);
-
-  // ---------- drawing ----------
+  // ---------- draw helpers ----------
   function orb(x,y,r,c,a){if(r<=0||a<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);
     g.addColorStop(0,rgba(c,a));g.addColorStop(0.4,rgba(c,a*0.5));g.addColorStop(1,rgba(c,0));
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}
+  function rrect(x,y,w,h,r){ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
-  function rotX(p,c,s){return [p[0],c*p[1]-s*p[2],s*p[1]+c*p[2]];}
-  function rotY(p,c,s){return [c*p[0]+s*p[2],p[1],-s*p[0]+c*p[2]];}
-
-  const ARMS=3, VP=[], MP=[];
-  function buildCore(){
-    VP.length=0;const nv=W<640?110:220;
-    for(let i=0;i<nv;i++)VP.push({u:Math.pow((i+0.5)/nv,0.7),arm:i%ARMS,jit:((i*0.37)%1-0.5)*0.16});
-    MP.length=0;const nm=W<640?46:80;
-    for(let i=0;i<nm;i++)MP.push({u:(i*0.113)%1,sp:0.6+((i*0.29)%1)*0.7});
+  // draw a competitor "found" card: glass pill, check dot, listing bars
+  function foundCard(x,y,appear,pulse){
+    if(appear<=0.01)return;
+    const w=WIDE?128:112, h=34, r=9;
+    const gx=x-w/2, gy=y-h/2;
+    const gl=0.5+0.5*Math.sin(pulse*TAU);
+    // glow
+    orb(x,y,w*0.7,COL.accent,0.12*appear*(0.6+gl*0.4));
+    // glass body (source-over for solid read)
+    ctx.globalCompositeOperation="source-over";
+    ctx.fillStyle=rgba([16,22,29],0.72*appear);
+    rrect(gx,gy,w,h,r);ctx.fill();
+    ctx.lineWidth=1.2;ctx.strokeStyle=rgba(COL.accent,(0.55+0.35*gl)*appear);
+    rrect(gx,gy,w,h,r);ctx.stroke();
+    // check dot
+    const cxd=gx+15, cyd=y;
+    ctx.fillStyle=rgba(COL.accent,0.9*appear);ctx.beginPath();ctx.arc(cxd,cyd,7,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba([255,255,255],0.95*appear);ctx.lineWidth=1.7;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(cxd-3,cyd);ctx.lineTo(cxd-0.6,cyd+2.6);ctx.lineTo(cxd+3.2,cyd-2.8);ctx.stroke();
+    // listing bars
+    ctx.fillStyle=rgba(COL.ice,0.55*appear);rrect(gx+28,gy+9,w-40,3.4,2);ctx.fill();
+    ctx.fillStyle=rgba(COL.dim||[152,160,172],0.4*appear);rrect(gx+28,gy+18,w-58,3,2);ctx.fill();
+    ctx.globalCompositeOperation="lighter";
   }
-  buildCore();window.addEventListener("resize",buildCore);
 
-  function drawField(t,intensity){
-    if(intensity<=0.001)return;
-    for(const n of NODES){
-      const p=nodePos(n);
-      if(n.you){
-        // YOUR node — exists but dead: dim steel dot, faint ring, no glow
-        ctx.strokeStyle=rgba(COL.dead,0.34*intensity);ctx.lineWidth=1;
-        ctx.beginPath();ctx.arc(p.x,p.y,7,0,TAU);ctx.stroke();
-        ctx.fillStyle=rgba(COL.dead,0.5*intensity);
-        ctx.beginPath();ctx.arc(p.x,p.y,2.4,0,TAU);ctx.fill();
-        ctx.globalCompositeOperation="source-over";
-        ctx.font="600 11px IBM Plex Mono, monospace";
-        ctx.fillStyle=rgba(COL.dead,0.75*intensity);ctx.textAlign="center";
-        ctx.fillText("ты", p.x, p.y-15);
-        ctx.globalCompositeOperation="lighter";
-      }else{
-        const pulse=0.55+0.45*Math.sin(t*1.6+n.pulse*TAU);
-        const rr=4+pulse*2.2;
-        orb(p.x,p.y,rr*3.4,COL.accent,0.10*intensity*pulse);
-        orb(p.x,p.y,rr,COL.ice,0.55*intensity);
-        if(n.label){
-          ctx.globalCompositeOperation="source-over";
-          ctx.font="500 9.5px IBM Plex Mono, monospace";
-          ctx.fillStyle=rgba(COL.accent,0.55*intensity);ctx.textAlign="center";
-          ctx.fillText(n.label, p.x, p.y-13);
-          ctx.globalCompositeOperation="lighter";
-        }
-      }
+  // draw YOUR card: grey empty «не найдено», or lit on hope
+  function youCard(x,y,appear,lit,label){
+    if(appear<=0.01)return;
+    const w=WIDE?176:186, h=54, r=11;
+    const gx=x-w/2, gy=y-h/2;
+    const base=lit>0.5?COL.accent:COL.dead;
+    ctx.globalCompositeOperation="source-over";
+    if(lit>0.01) orb(x,y,w*0.7,COL.accent,0.16*lit);
+    ctx.fillStyle=rgba([13,17,23],0.8*appear);
+    rrect(gx,gy,w,h,r);ctx.fill();
+    ctx.lineWidth=1.4;
+    ctx.setLineDash(lit>0.5?[]:[5,5]);
+    ctx.strokeStyle=rgba(base,(lit>0.5?0.85:0.5)*appear);
+    rrect(gx,gy,w,h,r);ctx.stroke();ctx.setLineDash([]);
+    // marker: empty circle → check
+    const mx=gx+18, my=gy+16;
+    if(lit>0.5){
+      ctx.fillStyle=rgba(COL.accent,0.95*appear);ctx.beginPath();ctx.arc(mx,my,7,0,TAU);ctx.fill();
+      ctx.strokeStyle=rgba([255,255,255],0.95);ctx.lineWidth=1.7;ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(mx-3,my);ctx.lineTo(mx-0.6,my+2.6);ctx.lineTo(mx+3.2,my-2.8);ctx.stroke();
+    }else{
+      ctx.strokeStyle=rgba(COL.dead,0.7*appear);ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(mx,my,6.5,0,TAU);ctx.stroke();
     }
-    // flow of searchers
-    const rate = intensity>0.5 ? 3 : 1;
-    if(!reduced){
-      for(let k=0;k<rate;k++){ if(Math.random()<intensity*0.6) spawnFlow(); }
-      if(Math.random()<intensity*0.22) spawnBypass();
+    // labels
+    ctx.textAlign="left";
+    ctx.font="600 12.5px Public Sans, sans-serif";
+    ctx.fillStyle=rgba(lit>0.5?COL.ice:[201,206,214],0.95*appear);
+    ctx.fillText(label.slice(0,20), gx+32, gy+20);
+    ctx.font="500 10px IBM Plex Mono, monospace";
+    ctx.fillStyle=rgba(lit>0.5?COL.accent:COL.dead,0.9*appear);
+    ctx.fillText(lit>0.5?"виден в среде":"не найдено", gx+32, gy+38);
+    ctx.textAlign="center";
+    ctx.globalCompositeOperation="lighter";
+  }
+
+  function drawScan(t,intensity,energy){
+    if(intensity<=0.001)return;
+    const a=anchors();
+    const hope=smooth(0.5,0.72,energy);        // your side ignites
+    // stagger competitor appearance
+    for(let i=0;i<CARDS.length;i++){
+      const c=CARDS[i];
+      const tgt=smooth(i*0.05, i*0.05+0.35, reveal);
+      c.appear+=(tgt-c.appear)*0.08;
+      c.pulse=(c.pulse+0.004)%1;
+      foundCard(a.them.x+c.ox*a.spread*a.sx, a.them.y+c.oy*a.spread*a.sy, c.appear*intensity, c.pulse);
+    }
+    // your card
+    const youAppear=smooth(0.25,0.6,reveal)*intensity;
+    youCard(a.you.x, a.you.y, youAppear, hope, biz);
+
+    // searchers
+    if(!reduced && intensity>0.15){
+      const n = intensity>0.5?3:1;
+      for(let k=0;k<n;k++){ if(Math.random()<intensity*0.7) spawnFlow(hope>0.4 && Math.random()<hope); }
     }
     for(let i=FLOW.length-1;i>=0;i--){
-      const f=FLOW[i];
-      f.t+=f.sp*(reduced?0.0:1);
+      const f=FLOW[i]; f.t+=f.sp*(reduced?0:1);
       if(f.t>=1){FLOW.splice(i,1);continue;}
-      const tgt=nodePos(f.node);
-      const ease=f.t;
-      let px,py;
-      if(f.bypass){
-        const veer=smooth(0.55,1,f.t);
-        const off=veer*R*1.3;
-        const nx=Math.cos(f.node.ang+1.6)*off, ny=Math.sin(f.node.ang+1.6)*off;
-        px=f.sx+(tgt.x-f.sx)*ease+nx;
-        py=f.sy+(tgt.y-f.sy)*ease+ny;
-      }else{
-        px=f.sx+(tgt.x-f.sx)*ease;
-        py=f.sy+(tgt.y-f.sy)*ease;
-      }
-      const a=(f.bypass?0.28:0.5)*intensity*(1-Math.abs(f.t-0.5)*1.3);
-      const c=f.bypass?COL.dead:COL.accent;
-      orb(px,py,2.6,c,clamp(a,0,1));
+      const e=f.t*f.t*(3-2*f.t);
+      const px=f.sx+(f.tx-f.sx)*e, py=f.sy+(f.ty-f.sy)*e;
+      const c=f.you?COL.ember:COL.accent;
+      orb(px,py,2.6,c,0.5*intensity*(1-Math.abs(f.t-0.5)*1.4));
     }
+    // live counter numbers
+    cThem.textContent = Math.round(smooth(0.1,0.45,energy)*12);
+    cYou.textContent  = hope>0.5 ? "1" : "0";
+    counter.querySelector(".num.you").style.color = hope>0.5 ? "var(--accent)" : "var(--dead)";
   }
+
+  // ---------- core: vortex (hero) morphs into an EYE (scan/hope) ----------
+  function rotX(p,c,s){return [p[0],c*p[1]-s*p[2],s*p[1]+c*p[2]];}
+  function rotY(p,c,s){return [c*p[0]+s*p[2],p[1],-s*p[0]+c*p[2]];}
+  const ARMS=3, VP=[], MP=[];
+  function buildCore(){
+    VP.length=0;const nv=W<640?100:200;
+    for(let i=0;i<nv;i++)VP.push({u:Math.pow((i+0.5)/nv,0.7),arm:i%ARMS,jit:((i*0.37)%1-0.5)*0.16});
+    MP.length=0;const nm=W<640?40:70;
+    for(let i=0;i<nm;i++)MP.push({u:(i*0.113)%1,sp:0.6+((i*0.29)%1)*0.7});
+  }
+  buildCore();window.addEventListener("resize",()=>{buildCore();seedCards();});
 
   function drawCore(t,breath){
     const col=mix(COL.accent,COL.volt,energy);
     const ox=CX+pointer.x*0.05, oy=CY+pointer.y*0.05;
+    const eye=reveal;                    // 0 vortex .. 1 eye
+    const vortexA=(1-eye);
 
-    // MÖBIUS loop
-    const Rm=R*1.95*(0.97+breath*0.03);
-    const bw=R*0.34, f=R*7.5;
-    const tiltC=Math.cos(1.02), tiltS=Math.sin(1.02);
-    const spin=reduced?0:t*0.32, spinC=Math.cos(spin), spinS=Math.sin(spin);
-    const project=p=>{let q=rotX(p,tiltC,tiltS);q=rotY(q,spinC,spinS);const s=f/(f-q[2]);return [ox+q[0]*s, oy+q[1]*s, q[2]];};
-    function pt(theta,sign){const ct=Math.cos(theta),st=Math.sin(theta),h=theta*0.5;
-      const dR=Math.cos(h), dN=Math.sin(h);
-      return project([Rm*ct+sign*bw*dR*ct, Rm*st+sign*bw*dR*st, sign*bw*dN]);}
-    const STEPS=96, A=[],B=[];
-    for(let i=0;i<=STEPS;i++){const th=i/STEPS*TAU;A.push(pt(th,1));B.push(pt(th,-1));}
-    for(let i=0;i<STEPS;i++){
-      const zavg=(A[i][2]+B[i][2]+A[i+1][2]+B[i+1][2])/4;
-      const depth=clamp((zavg/(bw+Rm)+1)/2,0,1);
-      ctx.fillStyle=rgba(col,(0.03+0.10*depth)*(0.6+energy*0.5));
-      ctx.beginPath();ctx.moveTo(A[i][0],A[i][1]);ctx.lineTo(A[i+1][0],A[i+1][1]);
-      ctx.lineTo(B[i+1][0],B[i+1][1]);ctx.lineTo(B[i][0],B[i][1]);ctx.closePath();ctx.fill();
-    }
-    ctx.lineWidth=1.4;ctx.strokeStyle=rgba(col,0.28+energy*0.25);
-    ctx.beginPath();for(let i=0;i<=STEPS;i++)i?ctx.lineTo(A[i][0],A[i][1]):ctx.moveTo(A[i][0],A[i][1]);ctx.stroke();
-    ctx.beginPath();for(let i=0;i<=STEPS;i++)i?ctx.lineTo(B[i][0],B[i][1]):ctx.moveTo(B[i][0],B[i][1]);ctx.stroke();
-    const mspeed=(reduced?0:1)*(0.4+energy*0.9);
-    for(const p of MP){
-      p.u=(p.u+p.sp*mspeed*0.0016)%1;
-      const q=pt(p.u*TAU,0), qj=pt(p.u*TAU-0.06,0);
-      const g=ctx.createLinearGradient(qj[0],qj[1],q[0],q[1]);
-      g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.8*(0.5+energy*0.5)));
-      ctx.strokeStyle=g;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(qj[0],qj[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
-      orb(q[0],q[1],3+energy*3,col,0.4);
+    // ---- Möbius loop (the cycle) — present in hero, recedes on scan ----
+    const loopA=(0.55*vortexA+0.12);
+    if(loopA>0.02){
+      const Rm=R*1.95*(0.97+breath*0.03), bw=R*0.34, f=R*7.5;
+      const tiltC=Math.cos(1.02),tiltS=Math.sin(1.02);
+      const spin=reduced?0:t*0.3, spinC=Math.cos(spin),spinS=Math.sin(spin);
+      const project=p=>{let q=rotX(p,tiltC,tiltS);q=rotY(q,spinC,spinS);const s=f/(f-q[2]);return [ox+q[0]*s,oy+q[1]*s,q[2]];};
+      const pt=(th,sg)=>{const ct=Math.cos(th),st=Math.sin(th),h=th*0.5,dR=Math.cos(h),dN=Math.sin(h);
+        return project([Rm*ct+sg*bw*dR*ct,Rm*st+sg*bw*dR*st,sg*bw*dN]);};
+      const S=88,A=[],B=[];for(let i=0;i<=S;i++){const th=i/S*TAU;A.push(pt(th,1));B.push(pt(th,-1));}
+      ctx.lineWidth=1.3;ctx.strokeStyle=rgba(col,0.24*loopA);
+      ctx.beginPath();for(let i=0;i<=S;i++)i?ctx.lineTo(A[i][0],A[i][1]):ctx.moveTo(A[i][0],A[i][1]);ctx.stroke();
+      ctx.beginPath();for(let i=0;i<=S;i++)i?ctx.lineTo(B[i][0],B[i][1]):ctx.moveTo(B[i][0],B[i][1]);ctx.stroke();
+      const msp=(reduced?0:1)*(0.5+energy*0.7);
+      for(const p of MP){p.u=(p.u+p.sp*msp*0.0016)%1;const q=pt(p.u*TAU,0);orb(q[0],q[1],3,COL.ice,0.5*loopA);}
     }
 
-    // VORTEX core
-    const maxR=R*1.15*(0.97+breath*0.03);
-    const tighten=1-0.5*energy, turns=2.0+energy*1.1;
-    const vrot=reduced?0:t*(0.2+energy*0.6);
-    for(const p of VP){
-      const rad=maxR*p.u*tighten;
-      const ang=p.arm/ARMS*TAU+p.u*turns*TAU+vrot+p.jit;
-      const x=ox+Math.cos(ang)*rad, y=oy+Math.sin(ang)*rad;
-      const ang2=ang-0.07, x2=ox+Math.cos(ang2)*rad, y2=oy+Math.sin(ang2)*rad;
-      const bright=(1-p.u*0.7);
-      const g=ctx.createLinearGradient(x2,y2,x,y);
-      g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.55*bright*(0.5+energy*0.5)));
-      ctx.strokeStyle=g;ctx.lineWidth=(0.6+bright*1.3)*(1+energy*0.5);
-      ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x,y);ctx.stroke();
+    // ---- Vortex (hero) ----
+    if(vortexA>0.02){
+      const maxR=R*1.15*(0.97+breath*0.03), vrot=reduced?0:t*0.3;
+      for(const p of VP){
+        const rad=maxR*p.u; const ang=p.arm/ARMS*TAU+p.u*2.0*TAU+vrot+p.jit;
+        const x=ox+Math.cos(ang)*rad,y=oy+Math.sin(ang)*rad;
+        const ang2=ang-0.07,x2=ox+Math.cos(ang2)*rad,y2=oy+Math.sin(ang2)*rad;
+        const bright=(1-p.u*0.7);
+        const g=ctx.createLinearGradient(x2,y2,x,y);
+        g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(COL.ice,0.5*bright*vortexA));
+        ctx.strokeStyle=g;ctx.lineWidth=0.6+bright*1.2;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x,y);ctx.stroke();
+      }
     }
-    const focus=(0.10+0.5*energy)*R*(0.9+breath*0.15);
-    // living ember glint while it awaits input (fades once revealed)
+
+    // ---- EYE (scan → hope) ----
+    if(eye>0.02){
+      const hope=smooth(0.5,0.72,energy);
+      const contract=smooth(0.3,0.48,energy);      // hit: pupil shrinks/darkens
+      // look direction: left toward competitors on scan, right toward YOU on hope
+      const a=anchors();
+      const lookX = (hope>0.05)? (a.you.x-CX) : (a.them.x-CX);
+      const lookY = (hope>0.05)? (a.you.y-CY) : (a.them.y-CY);
+      const ll=Math.hypot(lookX,lookY)||1;
+      const gaze=R*0.16*(0.4+0.6*Math.max(smooth(0.05,0.3,reveal),hope));
+      const pux=ox+lookX/ll*gaze, puy=oy+lookY/ll*gaze;
+
+      const irisR=R*(1.05 - 0.35*contract + 0.15*hope)*(0.97+breath*0.03);
+      // iris rings
+      const rings=WIDE?7:5;
+      for(let i=0;i<rings;i++){
+        const rr=irisR*(0.35+0.65*i/(rings-1));
+        const seg=26+i*4;
+        ctx.lineWidth=1;ctx.strokeStyle=rgba(col,(0.10+0.12*(1-i/rings))*eye*(1-0.5*contract)+0.1*hope);
+        ctx.beginPath();
+        for(let s=0;s<=seg;s++){const th=s/seg*TAU + t*(0.05+i*0.01)*(i%2?1:-1);
+          const wob=1+0.03*Math.sin(th*6+t*1.5+i);
+          const x=ox+Math.cos(th)*rr*wob,y=oy+Math.sin(th)*rr*wob;
+          s?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+        ctx.closePath();ctx.stroke();
+      }
+      // iris fibres toward pupil
+      const fib=WIDE?60:40;
+      for(let i=0;i<fib;i++){
+        const th=i/fib*TAU + t*0.04;
+        const x1=pux+Math.cos(th)*irisR*0.28, y1=puy+Math.sin(th)*irisR*0.28;
+        const x2=ox+Math.cos(th)*irisR, y2=oy+Math.sin(th)*irisR;
+        const g=ctx.createLinearGradient(x1,y1,x2,y2);
+        g.addColorStop(0,rgba(COL.ice,0.34*eye));g.addColorStop(1,rgba(col,0));
+        ctx.strokeStyle=g;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+      }
+      // pupil (dark on hit, blazing on hope)
+      const pupR=irisR*(0.30-0.08*contract+0.05*hope);
+      ctx.globalCompositeOperation="source-over";
+      ctx.fillStyle=rgba([4,5,8],0.9*eye);ctx.beginPath();ctx.arc(pux,puy,pupR,0,TAU);ctx.fill();
+      ctx.globalCompositeOperation="lighter";
+      ctx.lineWidth=1.6;ctx.strokeStyle=rgba(col,(0.5+0.4*hope)*eye);
+      ctx.beginPath();ctx.arc(pux,puy,pupR,0,TAU);ctx.stroke();
+      // pupil glow — ember on hope (agent alive), cold otherwise
+      orb(pux,puy,pupR*(1.4+hope*1.6), hope>0.3?COL.ember:COL.ice, (0.2+0.5*hope)*eye);
+
+      // beam to YOUR card on hope
+      if(hope>0.05){
+        const tgt=a.you;
+        const g=ctx.createLinearGradient(pux,puy,tgt.x,tgt.y);
+        g.addColorStop(0,rgba(COL.ember,0.5*hope));g.addColorStop(1,rgba(COL.accent,0.15*hope));
+        ctx.strokeStyle=g;ctx.lineWidth=1.4+2*hope;ctx.beginPath();ctx.moveTo(pux,puy);ctx.lineTo(tgt.x,tgt.y);ctx.stroke();
+      }
+    }
+
+    // core centre glow (always) — ember while awaiting input
+    const focus=(0.12+0.35*energy)*R*(0.9+breath*0.15);
     const emberGlow=(1-reveal)*(0.5+0.5*Math.sin(t*0.9));
     if(emberGlow>0.02) orb(ox,oy,focus*2.0,COL.ember,0.10*emberGlow);
-    orb(ox,oy,focus*2.4,col,0.22+energy*0.4);
-    orb(ox,oy,focus,COL.ice,0.5+energy*0.45);
+    if(vortexA>0.02){ orb(ox,oy,focus*2.2,col,0.2*vortexA); orb(ox,oy,focus,COL.ice,0.5*vortexA); }
   }
 
-  // ---------- narration opacity by energy ----------
+  // ---------- narration ----------
   function narrate(){
-    const base = revealed ? 1 : 0;
-    const scanTarget = base * (0.4 + 0.6*smooth(0.02,0.34,energy));
-    reveal += (scanTarget - reveal)*0.05;
-
-    nHit.style.opacity = revealed ? smooth(0.18,0.34,energy)*(1-smooth(0.5,0.62,energy)) : 0;
-    nHope.style.opacity = revealed ? smooth(0.5,0.66,energy) : 0;
-    hint.style.opacity = energy>0.6 ? 0 : 1;
+    const scanTarget = revealed ? (0.4+0.6*smooth(0.02,0.34,energy)) : 0;
+    reveal += (scanTarget-reveal)*0.05;
+    nHit.style.opacity  = revealed ? smooth(0.16,0.32,energy)*(1-smooth(0.5,0.62,energy)) : 0;
+    nHope.style.opacity = revealed ? smooth(0.52,0.68,energy) : 0;
+    counter.style.opacity = revealed ? smooth(0.14,0.3,energy)*(1-smooth(0.6,0.72,energy)) : 0;
+    hint.style.opacity = energy>0.55 ? 0 : 1;
     return reveal;
   }
 
@@ -394,10 +459,9 @@ canvas{display:block;width:100%;height:100%}
     if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
     const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
     const intensity=narrate();
-
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
-    drawField(t,intensity);
+    drawScan(t,intensity,energy);
     drawCore(t,breath);
     ctx.globalCompositeOperation="source-over";
     requestAnimationFrame(frame);
