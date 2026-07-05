@@ -66,19 +66,34 @@ body.light .tagline{color:var(--zfaint)}
 .heroui .deadline{margin-top:1.4rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
   text-transform:uppercase;color:var(--faint)}
 
-/* mini-ask — компактная строка ввода ПОД заголовком удара; не отдельный
-   этап (тот выпиливался мгновенным свайпом), а постоянная возможность:
-   написал — сцена перестраивается под тебя, нет — история идёт на демо */
-.miniask{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:.5rem;
-  max-width:360px;margin:1.5rem auto 0;border-bottom:1px solid rgba(255,157,92,.3);
-  padding:.35rem .2rem;transition:border-color .3s ease}
-.miniask:focus-within{border-color:rgba(255,157,92,.7)}
-.miniask input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
-  font-family:var(--body);font-size:.95rem;text-align:center;caret-color:var(--ember)}
-.miniask input::placeholder{color:var(--faint);font-size:.85rem}
-.miniask button{background:transparent;border:0;cursor:pointer;color:var(--ember);
-  font-family:var(--mono);font-size:1.05rem;line-height:1;padding:.2rem .3rem}
-.miniask.off{pointer-events:none}
+/* GATE — вау-момент сбора: после прогрева сцена гаснет, скролл запирается,
+   поле ввода РАСКРЫВАЕТСЯ ИЗ ЯДРА. Ввёл — схлопывается обратно и история
+   идёт про его бизнес; молчит — полоска догорает 9с / «пропустить» */
+.gate{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;transition:opacity .45s ease;
+  background:radial-gradient(ellipse at 50% 50%,rgba(7,8,12,.5) 0%,rgba(7,8,12,.93) 70%)}
+.gate.on{opacity:1;pointer-events:auto}
+.gwrap{width:min(88vw,470px);text-align:center;opacity:0;transform:scale(.06);
+  transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .45s ease .1s}
+.gate.on .gwrap{opacity:1;transform:scale(1)}
+.gk{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ember);margin-bottom:1.4rem}
+#gform{display:flex;align-items:center;gap:.6rem;border-bottom:2px solid rgba(255,157,92,.45);
+  padding:.55rem .3rem;transition:border-color .3s ease}
+#gform:focus-within{border-color:rgba(255,157,92,.9)}
+#gform input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
+  font-family:var(--body);font-size:clamp(1.1rem,3.4vw,1.35rem);text-align:center;caret-color:var(--ember)}
+#gform input::placeholder{color:var(--faint)}
+#gform button{background:transparent;border:0;cursor:pointer;color:var(--ember);
+  font-family:var(--mono);font-size:1.4rem;line-height:1;padding:.2rem .4rem}
+.gbar{height:1.5px;width:56%;margin:1.3rem auto 0;background:rgba(255,157,92,.12);border-radius:2px;overflow:hidden}
+.gbar i{display:block;height:100%;width:100%;background:var(--ember);opacity:.55}
+.gate.on .gbar i{animation:gburn 9s linear forwards}
+@keyframes gburn{from{width:100%}to{width:0}}
+.gskip{margin-top:1.7rem;background:transparent;border:0;cursor:pointer;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.gskip:hover{color:var(--dim)}
+@media (prefers-reduced-motion:reduce){.gwrap{transition:opacity .3s ease}.gate.on .gbar i{animation:none}}
 
 /* narration */
 .narr{position:fixed;left:0;right:0;z-index:21;text-align:center;pointer-events:none;
@@ -263,10 +278,19 @@ body.light .hint,body.light .credits{opacity:0}
 <div class="narr hit" id="nHit">
   <div class="kicker" id="hitKicker">я искал твой бизнес</div>
   <h2>Тебя перестают <span class="cold">находить</span></h2>
-  <form id="askform" class="miniask off" autocomplete="off">
-    <input id="askin" type="text" placeholder="твоё дело и город — проверю на тебе" maxlength="48" aria-label="your business and city">
-    <button type="submit" id="askbtn" aria-label="scan">↵</button>
-  </form>
+</div>
+
+<!-- GATE: поле ввода раскрывается ИЗ ЯДРА после прогрева (вау-момент) -->
+<div class="gate" id="gate" aria-hidden="true">
+  <div class="gwrap">
+    <div class="gk">теперь — про тебя</div>
+    <form id="gform" autocomplete="off">
+      <input id="gin" type="text" placeholder="твоё дело и город" maxlength="48" aria-label="your business and city">
+      <button type="submit" aria-label="scan">↵</button>
+    </form>
+    <div class="gbar"><i></i></div>
+    <button class="gskip" id="gskip" type="button">пропустить — покажу на примере ↓</button>
+  </div>
 </div>
 <div class="narr hope" id="nHope">
   <h2>Тот же поток можно <span class="em">развернуть на тебя</span></h2>
@@ -386,7 +410,9 @@ body.light .hint,body.light .credits{opacity:0}
   // scan dramaturgy keeps its thresholds no matter how long the page grows
   const scrollerEl=document.querySelector(".scroller");
   let energyTarget=0,energy=0;
-  function readScroll(){const m=scrollerEl.offsetHeight-window.innerHeight;
+  function readScroll(){
+    if(typeof gateState!=="undefined" && gateState===1){window.scrollTo(0,lockY);return;}
+    const m=scrollerEl.offsetHeight-window.innerHeight;
     energyTarget=m>0?clamp(window.scrollY/m,0,1):0; lightScroll();}
   window.addEventListener("scroll",readScroll,{passive:true});
 
@@ -429,28 +455,46 @@ body.light .hint,body.light .credits{opacity:0}
     hint.textContent="scroll — смотри, что происходит";
   }
 
-  // ---------- input ----------
-  const askform=document.getElementById("askform"),
-        askin=document.getElementById("askin"),askbtn=document.getElementById("askbtn"),
-        hint=document.getElementById("hint"),
+  // ---------- input: GATE (раскрытие из ядра после прогрева) ----------
+  const hint=document.getElementById("hint"),
         nHit=document.getElementById("nHit"),nHope=document.getElementById("nHope"),
         hitKicker=document.getElementById("hitKicker"),counter=document.getElementById("counter"),
-        cThem=document.getElementById("cThem"),cYou=document.getElementById("cYou");
+        cThem=document.getElementById("cThem"),cYou=document.getElementById("cYou"),
+        heroui=document.getElementById("heroui"),
+        gate=document.getElementById("gate"),gform=document.getElementById("gform"),
+        gin=document.getElementById("gin"),gskip=document.getElementById("gskip");
 
-  const heroui=document.getElementById("heroui");
-  askform.addEventListener("submit",e=>{
+  let gateState=0;                       // 0 armed · 1 open · 2 done
+  let gateDim=1, lockY=0, gateTimer=null;
+  function openGate(){
+    if(gateState!==0)return;
+    gateState=1; lockY=window.scrollY;
+    gate.classList.add("on"); gate.setAttribute("aria-hidden","false");
+    document.documentElement.style.overflow="hidden";
+    if(WIDE) setTimeout(()=>gin.focus(),750);
+    gateTimer=setTimeout(()=>closeGate(true),9200);   // молчит — история идёт сама
+  }
+  function closeGate(cont){
+    if(gateState!==1)return;
+    gateState=2; clearTimeout(gateTimer);
+    gate.classList.remove("on"); gate.setAttribute("aria-hidden","true");
+    document.documentElement.style.overflow="";
+    if(cont) setTimeout(()=>window.scrollTo({top:lockY+window.innerHeight*0.9,behavior:"smooth"}),150);
+  }
+  gskip.addEventListener("click",()=>closeGate(true));
+  gform.addEventListener("submit",e=>{
     e.preventDefault();
-    const raw=askin.value.trim(); if(!raw){askin.focus();return;}
+    const raw=gin.value.trim(); if(!raw){gin.focus();return;}
     let b=raw,c=""; const m=raw.split(/[,·|]/);
     if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
     hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
-    biz=b;city=c;                       // сцена уже идёт — перестраивается вживую
-    askbtn.textContent="✓";
-    askin.blur();
+    biz=b;city=c;
+    closeGate(true);
   });
-  // скан стартует сразу по скроллу — нет отдельного этапа, нечего пропустить
+  // скан стартует сразу по скроллу; гейт вооружён до момента прогрева
   function maybeDemo(){
     if(!revealed && energy>0.05) trigger(null,null,true);
+    if(gateState===0 && revealed && energy>0.4) openGate();
   }
 
   // ---------- draw helpers ----------
@@ -684,6 +728,8 @@ body.light .hint,body.light .credits{opacity:0}
     const focus=(0.12+0.35*energy)*R*(0.9+breath*0.15);
     const emberGlow=(1-reveal)*(0.5+0.5*Math.sin(t*0.9));
     if(emberGlow>0.02) orb(ox,oy,focus*2.0,COL.ember,0.10*emberGlow);
+    // гейт открыт: ядро дышит ember за полем ввода — «раскрылось из ядра»
+    if(gateState===1) orb(ox,oy,R*(2.0+breath*0.4),COL.ember,0.16);
     if(vortexA>0.02){ // hot heart — плотное горячее сердце ядра
       orb(ox,oy,focus*2.6,col,0.3*vortexA);
       orb(ox,oy,focus*1.3,COL.ice,0.55*vortexA);
@@ -734,7 +780,6 @@ body.light .hint,body.light .credits{opacity:0}
     const dawnFade=1-smooth(0.76,0.9,energy);   // dark-act text dissolves into the dawn
     const hitOp = revealed ? smooth(0.1,0.24,energy)*(1-smooth(0.46,0.56,energy)) : 0;
     nHit.style.opacity = hitOp;
-    askform.classList.toggle("off", hitOp<0.3);   // невидимая форма не должна ловить тапы
     nHope.style.opacity = revealed ? smooth(0.56,0.7,energy)*dawnFade : 0;
     // мобайл: счётчик и «твой бизнес» делят низ экрана — счётчик гаснет
     // ДО вспышки медальона (никаких наложений)
@@ -778,9 +823,10 @@ body.light .hint,body.light .credits{opacity:0}
     if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
     const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
     const intensity=narrate();
+    gateDim+=((gateState===1?0.15:1)-gateDim)*0.08;   // сцена гаснет под гейтом
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
-    drawScan(t,intensity,energy);
+    drawScan(t,intensity*gateDim,energy);
     drawCore(t,breath);
     drawDawn();
     ctx.globalCompositeOperation="source-over";
