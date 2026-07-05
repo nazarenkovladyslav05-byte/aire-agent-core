@@ -112,7 +112,7 @@ body.light .tagline{color:var(--zfaint)}
 .narr .cold{color:var(--accent)}    /* cold verdict of the environment */
 
 /* live counter */
-.counter{position:fixed;left:50%;bottom:clamp(2.4rem,6vh,4rem);transform:translateX(-50%);z-index:21;
+.counter{display:none;position:fixed;left:50%;bottom:clamp(2.4rem,6vh,4rem);transform:translateX(-50%);z-index:21;
   display:flex;gap:clamp(1.4rem,6vw,3rem);align-items:center;opacity:0;transition:opacity .5s ease;pointer-events:none}
 .counter .cell{text-align:center}
 .counter .num{font-family:var(--disp);font-weight:800;font-size:clamp(1.7rem,5vw,2.6rem);line-height:1;letter-spacing:-.02em}
@@ -296,7 +296,7 @@ body.light .hint,body.light .credits{opacity:0}
   </div>
 </div>
 <div class="narr hope" id="nHope">
-  <h2>Тот же поток можно <span class="em">развернуть на тебя</span></h2>
+  <h2>Тот же поток можно <span class="em" id="hopeEm">развернуть на тебя</span></h2>
 </div>
 
 <div class="counter" id="counter">
@@ -436,10 +436,12 @@ body.light .hint,body.light .credits{opacity:0}
 
   // ring geometry — recomputed per frame
   function anchors(){
-    if(WIDE) return {rx:Math.min(W*0.36,R*3.8), ry:Math.min(H*0.29,R*2.5), youAng:0};
+    // YOU всегда на оси ядра (снизу по центру) — «из центра ядра» (Влад)
+    if(WIDE) return {rx:Math.min(W*0.36,R*3.8), ry:Math.min(H*0.29,R*2.5), youAng:Math.PI/2};
     return {rx:W*0.36, ry:H*0.24, youAng:Math.PI/2};
   }
   function ringPos(a,ang,k){return {x:CX+Math.cos(ang)*a.rx*k, y:CY+Math.sin(ang)*a.ry*k};}
+  const YOU={x:0,y:0};                  // актуальная позиция медальона (для луча/взгляда/рассвета)
 
   // searchers streaming to competitors (redirect to YOU on hope)
   const FLOW=[];
@@ -498,6 +500,7 @@ body.light .hint,body.light .credits{opacity:0}
     let b=raw,c=""; const m=raw.split(/[,·|]/);
     if(m.length>1){b=m[0].trim();c=m.slice(1).join(" ").trim();}
     hitKicker.textContent="я искал «"+b.slice(0,22)+"»"+(c?" в "+c.slice(0,18):"");
+    document.getElementById("hopeEm").textContent="развернуть на «"+b.slice(0,18)+"»";
     biz=b;city=c;
     closeGate(true);
   });
@@ -550,9 +553,9 @@ body.light .hint,body.light .credits{opacity:0}
 
   // YOUR business = СИМВОЛ, не текст-плашка (фидбек Влада): круглый
   // медальон-объект с витриной внутри, исходит из ядра; подпись под ним
-  function youCard(x,y,appear,lit,label,themN){
+  function youCard(x,y,appear,lit,label,themN,scale){
     if(appear<=0.01)return;
-    const rr=WIDE?36:31;
+    const rr=(WIDE?36:31)*(scale||1);
     ctx.globalCompositeOperation="source-over";
     if(lit>0.01) orb(x,y,rr*3.2,COL.accent,0.22*lit);
     // medallion
@@ -586,8 +589,8 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.font="500 10px IBM Plex Mono, monospace";
     ctx.fillStyle=rgba(lit>0.5?COL.accent:COL.dead,0.9*appear);
     ctx.fillText(lit>0.5?"виден в среде":"не найдено", x, y+rr+39);
-    // мобайл: счёт — третья строка подписи (вместо отдельного блока внизу)
-    if(!WIDE && lit<=0.5 && themN>0){
+    // счёт — третья строка подписи медальона (единый паттерн на всех ширинах)
+    if(lit<=0.5 && themN>0){
       ctx.font="500 10.5px IBM Plex Mono, monospace";
       ctx.fillStyle=rgba(COL.accent,0.8*appear);
       ctx.fillText("нашли: их "+themN+" · тебя 0", x, y+rr+58);
@@ -599,20 +602,25 @@ body.light .hint,body.light .credits{opacity:0}
     if(intensity<=0.001)return;
     const a=anchors();
     const hope=smooth(0.5,0.72,energy);        // your side ignites
-    // competitors are cast OUT of the core onto the ring (staggered)
+    // competitors are cast OUT of the core onto the ring (staggered);
+    // на надежде отступают наружу и тухнут — сцена отдаёт центр ТЕБЕ
     for(let i=0;i<CARDS.length;i++){
       const c=CARDS[i];
       const tgt=smooth(i*0.05, i*0.05+0.35, reveal);
       c.appear+=(tgt-c.appear)*0.08;
       c.pulse=(c.pulse+0.004)%1;
-      const p=ringPos(a, a.youAng+c.off, 0.22+0.78*c.appear);   // fly-out from centre
-      foundCard(p.x, p.y, c.appear*intensity, c.pulse, i);
+      const p=ringPos(a, a.youAng+c.off, (0.22+0.78*c.appear)*(1+0.12*hope));
+      foundCard(p.x, p.y, c.appear*intensity*(1-0.45*hope), c.pulse, i);
     }
-    // your card — тоже исходит из ядра на свой слот кольца
-    const youAppear=smooth(0.25,0.6,reveal)*intensity;
-    const yp=ringPos(a, a.youAng, 0.22+0.78*smooth(0.25,0.6,reveal));
+    // YOU — ЦЕНТРАЛЬНЫЙ элемент: рождается из ядра; на надежде
+    // притягивается обратно к ядру и растёт (из центра, не с края)
+    const youReveal=smooth(0.25,0.6,reveal);
+    const youAppear=youReveal*intensity;
+    const youK=(0.22+0.78*youReveal)*(1-0.42*hope);
+    const yp=ringPos(a, a.youAng, youK);
+    YOU.x=yp.x; YOU.y=yp.y;
     const themN=Math.round(smooth(0.1,0.45,energy)*12);
-    youCard(yp.x, yp.y, youAppear, hope, biz, themN);
+    youCard(yp.x, yp.y, youAppear, hope, biz, themN, 1+0.55*hope);
 
     // searchers
     if(!reduced && intensity>0.15){
@@ -689,7 +697,7 @@ body.light .hint,body.light .credits{opacity:0}
       const contract=smooth(0.3,0.48,energy);      // hit: pupil shrinks/darkens
       // look direction: left toward competitors on scan, right toward YOU on hope
       const a=anchors();
-      const yp=ringPos(a,a.youAng,1);
+      const yp=(YOU.x||YOU.y)?YOU:ringPos(a,a.youAng,1);
       // on scan the eye looks away from YOUR slot (to the competitors),
       // on hope it turns to YOU
       const lookX = (hope>0.05)? (yp.x-CX) : (CX-yp.x);
@@ -761,7 +769,7 @@ body.light .hint,body.light .credits{opacity:0}
     const d=smooth(0.74,0.97,energy);
     if(d<=0.005)return;
     const a=anchors();
-    const yp=ringPos(a,a.youAng,1);
+    const yp=(YOU.x||YOU.y)?YOU:ringPos(a,a.youAng,1);
     ctx.globalCompositeOperation="source-over";
     const rad=Math.hypot(W,H)*(0.12+1.15*d);
     const g=ctx.createRadialGradient(yp.x,yp.y,0,yp.x,yp.y,rad);
