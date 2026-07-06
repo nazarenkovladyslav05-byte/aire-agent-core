@@ -194,6 +194,8 @@ body.light .hint,body.light .credits{opacity:0}
 .close .cycle{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--volt);margin-top:1.2rem}
 .close .next{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--zfaint);margin-top:3.2rem}
+.seamgap{height:62vh;padding:0}   /* шов №1: простор для завитка нити в кольцо */
+@media (max-width:760px){ .seamgap{height:52vh} }
 
 @media (prefers-reduced-motion:reduce){
   .hint{animation:none}
@@ -248,6 +250,31 @@ body.light .hint,body.light .credits{opacity:0}
 .pring.closed .pcyc{opacity:1}
 .pnums{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
   text-transform:uppercase;color:var(--zfaint);margin-top:.55rem}
+.pring{opacity:0;transition:opacity .5s ease}   /* штатное кольцо ждёт хэндоффа от кольца-кондуита */
+
+/* ШОВ №1 — кольцо-кондуит: нить «что делаем» СВОРАЧИВАЕТСЯ в петлю, замыкается
+   (идеал), РАЗРЫВАЕТ обод в «твою» петлю и сливается в 0% — потом хэндофф в #pring.
+   Один непрерывный ток, одно существо на всём шве. */
+.coilring{position:fixed;left:50%;top:50%;width:min(74vw,300px);aspect-ratio:1;
+  z-index:14;pointer-events:none;opacity:0;
+  transform:translate(-50%,-50%);will-change:transform,opacity}
+.coilring>svg{width:100%;height:100%;display:block;overflow:visible}
+.coilring .crtrk{fill:none;stroke:rgba(37,99,235,.12);stroke-width:5.5}
+.coilring .crtail,.coilring .crfil{fill:none;stroke:url(#cgrad);stroke-width:6;stroke-linecap:round}
+.coilring .crfil{stroke-dasharray:628.318;stroke-dashoffset:628.318}
+.coilring.closed .crfil,.coilring.closed .crtail{filter:drop-shadow(0 0 10px rgba(37,99,235,.5))}
+.coilring .crspin{transform-origin:120px 120px}
+.coilring.closed .crspin{animation:spin 26s linear infinite}
+.coilring .crdot{fill:var(--accent);filter:drop-shadow(0 0 7px rgba(91,155,255,.95))}
+.crcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:0 15%}
+.crword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.08;
+  font-size:clamp(1.02rem,2.5vw,1.45rem);color:var(--ztext);transition:opacity .35s ease}
+.crword.tny{font-size:clamp(.86rem,2.1vw,1.12rem)}
+.crcyc{font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;color:var(--volt);
+  margin-top:.55rem;max-width:13ch;line-height:1.5;transition:opacity .35s ease}
+.crsub{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--zfaint);margin-top:.5rem;transition:opacity .35s ease}
 
 .tiercol{display:flex;flex-direction:column}
 .tier{padding:clamp(2.2rem,7vh,4.4rem) 0;border-bottom:1px solid var(--zline);
@@ -308,10 +335,15 @@ body.light .hint,body.light .credits{opacity:0}
   .pcenter{padding:0 6%}
   .tier{padding:clamp(1.9rem,6vh,3rem) 0}
   .tier.climax{margin-top:1.6rem}
+  /* кольцо-кондуит на мобиле — центр экрана, чуть выше середины (низ под теги) */
+  .coilring{width:min(62vw,220px);top:44%}
+  .crword{font-size:1rem}
+  .crword.tny{font-size:.9rem}
 }
 @media (prefers-reduced-motion:reduce){
   .pring.closed>svg{animation:none}
   .tier,.pring .fil{transition:none}
+  .coilring.closed .crspin{animation:none}
 }
 </style>
 </head>
@@ -406,7 +438,26 @@ body.light .hint,body.light .credits{opacity:0}
 </div>
 
 <div class="hint" id="hint">scroll</div>
-<div class="credits">Core-eye · scan + light + packages<br>0 credits · Phase 2 prototype v4</div>
+<div class="credits">Core-eye · scan + light + packages<br>0 credits · Phase 2 prototype v5 · seam #1</div>
+
+<!-- ШОВ №1: кольцо-кондуит — нить сворачивается в петлю, замыкается,
+     разрывается в «твою» петлю, сливается в 0%, затем хэндофф в #pring -->
+<div class="coilring" id="coilRing" aria-hidden="true">
+  <svg viewBox="0 0 240 240">
+    <defs><linearGradient id="cgrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#2563EB"/>
+    </linearGradient></defs>
+    <circle class="crtrk" cx="120" cy="120" r="100"/>
+    <path class="crtail" id="crtail" d="M120,-34 L120,20" style="stroke-dasharray:54;stroke-dashoffset:54"/>
+    <g class="crspin"><circle class="crfil" id="crfil" cx="120" cy="120" r="100" transform="rotate(-90 120 120)"/></g>
+    <circle class="crdot" id="crdot" r="0" cx="120" cy="20"/>
+  </svg>
+  <div class="crcenter">
+    <div class="crword" id="crword">петля<br>замыкается</div>
+    <div class="crcyc" id="crcyc">найти · продать · обслужить · учиться&nbsp;⟳</div>
+    <div class="crsub" id="crsub">и крутится сама</div>
+  </div>
+</div>
 
 <!-- ================= LIGHT ZONE: ЧТО МЫ ДЕЛАЕМ ================= -->
 <section class="zone" id="dowhat">
@@ -473,14 +524,10 @@ body.light .hint,body.light .credits{opacity:0}
         </div>
       </div>
 
-      <div class="close" id="loopClose">
-        <div class="ring"></div>
-        <h3>Петля замыкается — и крутится сама</h3>
-        <p>Найти → продать → обслужить → учиться — и снова найти.
-           Каждый круг делает следующий сильнее. Это и есть Loop.</p>
-        <div class="cycle">найти → продать → обслужить → учиться ⟳</div>
-        <div class="next">дальше — пакеты ↓</div>
-      </div>
+      <!-- шов №1: нить не обрывается колечком — она уходит вниз и СВОРАЧИВАЕТСЯ
+           в кольцо-кондуит (#coilRing), который замыкается по центру экрана.
+           Этот блок теперь спейсер: даёт скролл-простор для завитка и замыкания. -->
+      <div class="close seamgap" id="loopClose" aria-hidden="true"></div>
     </div>
 
   </div>
@@ -609,7 +656,7 @@ body.light .hint,body.light .credits{opacity:0}
   function readScroll(){
     if(typeof gateState!=="undefined" && gateState===1){window.scrollTo(0,lockY);return;}
     const m=scrollerEl.offsetHeight-window.innerHeight;
-    energyTarget=m>0?clamp(window.scrollY/m,0,1):0; lightScroll(); packagesScroll();}
+    energyTarget=m>0?clamp(window.scrollY/m,0,1):0; lightScroll(); packagesScroll(); seamScroll();}
   window.addEventListener("scroll",readScroll,{passive:true});
 
   // ---------- scan state ----------
@@ -1079,6 +1126,61 @@ body.light .hint,body.light .credits{opacity:0}
   }
   window.addEventListener("resize",packagesScroll);
 
+  // ---------- ШОВ №1: кольцо-кондуит (нить → петля → разрыв → 0% → хэндофф в #pring) ----------
+  const coilRing=document.getElementById("coilRing"),
+        crfil=document.getElementById("crfil"),
+        crtail=document.getElementById("crtail"),
+        crdot=document.getElementById("crdot"),
+        crword=document.getElementById("crword"),
+        crcyc=document.getElementById("crcyc"),
+        crsub=document.getElementById("crsub"),
+        seamGap=document.getElementById("loopClose"),
+        pkgSection=document.getElementById("packages");
+  const CRCIRC=628.318, CRTAIL=54;
+  const seam={drawn:0,closed:false,active:false};   // для бегущего тока в frame()
+  function seamScroll(){
+    if(!coilRing||!pring) return;
+    const vh=window.innerHeight;
+    const gapTop=seamGap.getBoundingClientRect().top;      // конец «что делаем»
+    const pkgTop=pkgSection.getBoundingClientRect().top;   // начало «пакетов»
+    const firstTier=ptiers.length?ptiers[0].getBoundingClientRect().top:pkgTop;
+    const coilP =smooth(vh*0.92, vh*0.40, gapTop);   // завиток: нить дочерчивает обод
+    const breakP=smooth(vh*0.60, vh*0.02, pkgTop);   // разрыв обода → слив в 0% (шире: «твоя петля» держится)
+    const handP =smooth(vh*0.80, vh*0.42, firstTier);// хэндофф в #pring
+
+    const drain=smooth(0,0.72,breakP);               // слив завершается к «твой цикл 0%»
+    const drawn=clamp(coilP*(1-drain),0,1);
+    seam.drawn=drawn;
+    crfil.style.strokeDashoffset=CRCIRC*(1-drawn);
+    crtail.style.strokeDashoffset=CRTAIL*(1-coilP);
+    const isClosed=drawn>0.985 && breakP<0.02;
+    seam.closed=isClosed;
+    coilRing.classList.toggle("closed", isClosed);
+
+    // центр: идеал «петля замыкается» → «а теперь твоя петля» → «твой цикл 0%»
+    let word, cyc=false, sub="";
+    if(breakP<0.12){ word="петля<br>замыкается"; cyc=true; sub="и крутится сама"; }
+    else if(breakP<0.72){ word="а теперь —<br>твоя петля"; }
+    else { word="твой цикл"; sub="0% цикла"; }
+    if(crword.dataset.w!==word){ crword.innerHTML=word; crword.dataset.w=word; }
+    crcyc.style.opacity=cyc?"1":"0";
+    if(crsub.textContent!==sub) crsub.textContent=sub;
+    crsub.style.opacity=sub?"1":"0";
+
+    // позиция: центр экрана → доезжает ровно в место #pring, гаснет; #pring зеркально оживает
+    const pr=pring.getBoundingClientRect();
+    const cxMid=window.innerWidth/2, cyMid=vh*(WIDE?0.5:0.44), tt=smooth(0.15,0.9,handP);
+    const cx=cxMid+((pr.left+pr.width/2)-cxMid)*tt, cy=cyMid+((pr.top+pr.height/2)-cyMid)*tt;
+    const scale=1+((pr.width/(coilRing.offsetWidth||pr.width))-1)*tt;
+    coilRing.style.left=cx+"px"; coilRing.style.top=cy+"px";
+    coilRing.style.transform="translate(-50%,-50%) scale("+scale.toFixed(3)+")";
+
+    seam.active=coilP>0.02 && handP<0.98;
+    coilRing.style.opacity=(coilP>0.02?1:0)*(1-smooth(0.55,0.98,handP));
+    pring.style.opacity=smooth(0.4,0.9,handP);
+  }
+  window.addEventListener("resize",seamScroll);
+
   // нить данных гейта: {biz}/{city} видимо работают в пакетах + WhatsApp-prefill
   function updatePkg(){
     const b=(biz && biz!=="твой бизнес")?biz.slice(0,26):"";
@@ -1108,6 +1210,15 @@ body.light .hint,body.light .credits{opacity:0}
     if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
     const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
     const intensity=narrate();
+    // шов №1: один непрерывный ток бежит по ободу кольца-кондуита
+    if(crdot){
+      if(seam.active){
+        const ang=seam.closed ? (-Math.PI/2 + t*1.1) : (-Math.PI/2 + seam.drawn*TAU);
+        crdot.setAttribute("cx",(120+100*Math.cos(ang)).toFixed(1));
+        crdot.setAttribute("cy",(120+100*Math.sin(ang)).toFixed(1));
+        crdot.setAttribute("r", seam.drawn>0.03?5:0);
+      } else crdot.setAttribute("r",0);
+    }
     gateDim+=((gateState===1?0.15:1)-gateDim)*0.08;   // сцена гаснет под гейтом
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
