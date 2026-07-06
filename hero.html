@@ -160,6 +160,10 @@ body.light .hint,body.light .credits{opacity:0}
 .thread .spark{position:absolute;left:50%;top:0%;transform:translate(-50%,-50%);
   width:8px;height:8px;border-radius:50%;background:var(--accent);
   box-shadow:0 0 14px rgba(91,155,255,.9),0 0 30px rgba(37,99,235,.5);opacity:0}
+/* ШОВ №2: реальный canvas-жгут ядра заменяет DOM-нить (леса) в зоне «что делаем».
+   Зона прозрачна — сквозь неё виден fixed-canvas #c, он же красит светлый фон. */
+#dowhat{background:transparent}
+#dowhat .thread{display:none}
 
 .stage{position:relative;display:grid;grid-template-columns:1fr 76px 1fr;align-items:center;
   margin-bottom:clamp(4rem,11vh,7.5rem)}
@@ -207,13 +211,16 @@ body.light .hint,body.light .credits{opacity:0}
   /* мобайл: отдельный счётчик внизу «не смотрится» (Влад) —
      счёт живёт в подписи медальона, из центра */
   .counter{display:none}
-  .thread{left:17px;transform:none}
-  .thread .spark{left:18px}
-  .stage{grid-template-columns:44px 1fr;margin-bottom:clamp(3.2rem,8vh,5rem)}
-  .stage .node{grid-column:1;justify-self:start;margin-left:10px}
-  .stage:nth-of-type(odd) .card,.stage:nth-of-type(even) .card{grid-column:2;text-align:left}
-  .stage:nth-of-type(odd) .card p{margin-left:0}
-  .stage:nth-of-type(odd) .card .tags{justify-content:flex-start}
+  /* мобайл: позвоночник ПО ЦЕНТРУ (выбор Влада, раунд 2) — узлы на оси ядра,
+     карточка-плашка под узлом; ток-жгут ядра течёт по центру за стеклом плашек */
+  .thread{left:50%;transform:translateX(-50%)}
+  .stage{grid-template-columns:1fr;justify-items:center;margin-bottom:clamp(3.6rem,9vh,5.4rem)}
+  .stage .node{grid-column:1;justify-self:center;margin:0 0 1.1rem}
+  .stage:nth-of-type(odd) .card,.stage:nth-of-type(even) .card{grid-column:1;text-align:center}
+  .stage .card{background:rgba(246,248,251,.66);backdrop-filter:blur(3px);
+    border:1px solid var(--zline);border-radius:14px;padding:1rem 1.05rem;max-width:34rem}
+  .stage .card p,.stage:nth-of-type(odd) .card p{margin:0 auto}
+  .stage .card .tags,.stage:nth-of-type(odd) .card .tags{justify-content:center}
 }
 /* ============================================================
    PACKAGES — «Пакеты» (глава ТОК / ПРЕДЛОЖЕНИЕ)
@@ -384,8 +391,8 @@ body.light .hint,body.light .credits{opacity:0}
           <stop offset="0.5" stop-color="#2563EB"/><stop offset="0.5" stop-color="#10294F"/>
         </linearGradient>
         <linearGradient id="tricolourl" gradientUnits="userSpaceOnUse" x1="374" y1="0" x2="460" y2="0">
-          <stop offset="0.3333" stop-color="#6E9BEF"/><stop offset="0.3333" stop-color="#FFFFFF"/>
-          <stop offset="0.6667" stop-color="#FFFFFF"/><stop offset="0.6667" stop-color="#2F4A73"/>
+          <stop offset="0.3333" stop-color="#2563EB"/><stop offset="0.3333" stop-color="#1E4FA8"/>
+          <stop offset="0.6667" stop-color="#1E4FA8"/><stop offset="0.6667" stop-color="#0E1B2E"/>
         </linearGradient>
       </defs>
       <g transform="translate(244.5 54) scale(0.34)">
@@ -396,7 +403,7 @@ body.light .hint,body.light .credits{opacity:0}
       <text x="180" y="158" font-weight="800" font-size="84" fill="#0E1B2E">A</text>
       <text x="244" y="158" font-weight="800" font-size="84" fill="url(#splitIl)">I</text>
       <text x="279" y="158" font-weight="800" font-size="64" fill="#0E1B2E">RE</text>
-      <text x="374" y="158" font-weight="800" font-size="44" fill="url(#tricolourl)" stroke="#B9C9E0" stroke-width="0.55">land</text>
+      <text x="374" y="158" font-weight="800" font-size="44" fill="url(#tricolourl)">land</text>
       <g fill="none" stroke="#F5F9FF" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M256.1,103.7 L256.1,111 L252.5,111"/><path d="M256.1,116.4 L256.1,123.6 L258.8,123.6"/><path d="M257,134.5 L257,149 L260.6,149"/><path d="M265.1,101.9 L265.1,107.3 L268.7,107.3"/><path d="M266.9,114.6 L266.9,121.8 L270.6,121.8"/><path d="M266,136.3 L266,143.5 L269.6,143.5"/></g>
       <g fill="#F5F9FF"><circle cx="252.5" cy="111" r="1.27"/><circle cx="258.8" cy="123.6" r="1.27"/><circle cx="260.6" cy="149" r="1.27"/><circle cx="268.7" cy="107.3" r="1.27"/><circle cx="270.6" cy="121.8" r="1.27"/><circle cx="269.6" cy="143.5" r="1.27"/></g>
     </svg>
@@ -1055,6 +1062,45 @@ body.light .hint,body.light .credits{opacity:0}
     if(f>0.005){ctx.fillStyle="rgba(246,248,251,"+f+")";ctx.fillRect(0,0,W,H);}
   }
 
+  // ---------- ШОВ №2: ядро-жгут тока течёт по светлой зоне «что делаем» ----------
+  // Живая инверсия: тот же рой не гаснет — на свету становится тёмно-волтовым
+  // жгутом (source-over вместо additive). Петля размотана в вертикаль тока;
+  // бегущий кончик = «узел-вспышка», добегая до этапа, зажигает его (DOM .stage.on).
+  const TH={loopTop:0,loopH:0,pct:0,inView:false};
+  function drawThread(t){
+    if(!TH.inView) return;
+    const vh=H;
+    const lit=smooth(0.72,0.9,energy);                       // свет пришёл → ядро инвертировалось
+    if(lit<=0.01) return;
+    const outFade=clamp((TH.loopTop+TH.loopH)/(vh*0.4),0,1); // гаснет, уходя вверх к шву №1
+    const show=lit*outFade;
+    if(show<=0.01) return;
+    const x=CX;
+    const topY=Math.min(TH.loopTop,CY);                      // рождается из центра ядра на шве
+    const botY=TH.loopTop+TH.loopH;
+    const tipY=clamp(TH.loopTop+TH.pct/100*TH.loopH, topY, botY);
+    ctx.globalCompositeOperation="source-over";
+    // слабый полный след жгута (тёмно-волтовый на светлом)
+    ctx.strokeStyle=rgba(COL.volt,0.12*show); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x,topY); ctx.lineTo(x,botY); ctx.stroke();
+    // горячая часть тока: от рождения до бегущего кончика
+    const g=ctx.createLinearGradient(x,topY,x,tipY);
+    g.addColorStop(0,rgba(COL.volt,0.0));
+    g.addColorStop(0.12,rgba(COL.volt,0.5*show));
+    g.addColorStop(1,rgba(COL.volt,0.92*show));
+    ctx.strokeStyle=g; ctx.lineWidth=2.6;
+    ctx.beginPath(); ctx.moveTo(x,topY); ctx.lineTo(x,tipY); ctx.stroke();
+    // частицы тока текут вниз — та же ДНК ядра, тёмные на светлом
+    const span=Math.max(tipY-topY,1), n=WIDE?15:10;
+    for(let i=0;i<n;i++){
+      const fp=((i+1)/(n+1)+t*0.13)%1;
+      orb(x, topY+fp*span, 2.4+2.2*(1-fp), COL.volt, (0.22+0.4*(1-fp))*show);
+    }
+    // бегущий кончик — узел энергии, что зажигает очередной этап
+    orb(x,tipY,9+3*Math.max(0,Math.sin(t*3)),COL.volt,0.5*show);
+    ctx.fillStyle=rgba(COL.volt,0.95*show); ctx.beginPath(); ctx.arc(x,tipY,3.2,0,TAU); ctx.fill();
+  }
+
   // ---------- narration ----------
   function narrate(){
     maybeDemo();
@@ -1084,7 +1130,15 @@ body.light .hint,body.light .credits{opacity:0}
   function lightScroll(){
     const vh=window.innerHeight;
     const zr=zone.getBoundingClientRect();
-    document.body.classList.toggle("light", zr.top < vh*0.45);
+    // Версию лого/HUD переключаем в момент, когда светлый фон ЗА лого достигает ~50%.
+    // .zone .seam (26vh) растворяет светлый фон сверху вниз; доля света на уровне
+    // центра лого = (yLogo - (zr.top - seam)) / seam. Считаем по РЕАЛЬНОМУ центру
+    // лого (не по y=0) — иначе тёмная версия (светлый текст) висит на уже
+    // светлеющем фоне и бледнеет. Раньше стоял грубый порог 0.45vh.
+    const seam=vh*0.26;
+    const logoR=document.querySelector(".logo").getBoundingClientRect();
+    const yLogo=logoR.top+logoR.height/2;
+    document.body.classList.toggle("light", (yLogo-(zr.top-seam))/seam > 0.5);
     const lr=loopEl.getBoundingClientRect();
     const total=lr.height||1;
     // the current tip rides at ~62% of the viewport
@@ -1097,6 +1151,8 @@ body.light .hint,body.light .credits{opacity:0}
       s.classList.toggle("on", passed >= s.offsetTop + s.offsetHeight*0.5);
     }
     closeEl.classList.toggle("on", passed >= total-vh*0.12);
+    // геометрия для canvas-жгута шва №2 (viewport-координаты)
+    TH.loopTop=lr.top; TH.loopH=total; TH.pct=pct; TH.inView=(lr.bottom>0 && lr.top<vh);
   }
   window.addEventListener("resize",lightScroll);
 
@@ -1222,9 +1278,9 @@ body.light .hint,body.light .credits{opacity:0}
     gateDim+=((gateState===1?0.15:1)-gateDim)*0.08;   // сцена гаснет под гейтом
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
-    drawScan(t,intensity*gateDim,energy);
-    drawCore(t,breath);
+    if(energy<0.999){ drawScan(t,intensity*gateDim,energy); drawCore(t,breath); }  // скрыты под флудом в светлой зоне — экономим FPS
     drawDawn();
+    drawThread(t);                 // шов №2: ядро размотано в жгут тока по светлой зоне
     ctx.globalCompositeOperation="source-over";
     requestAnimationFrame(frame);
   }
