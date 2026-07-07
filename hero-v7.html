@@ -267,23 +267,23 @@ body.light .hint,body.light .credits{opacity:0}
    ленту Мёбиуса (у ленты нет шва — «крутится сама» буквально); по ленте циркулируют
    4 холодных пакета-этапа + ОДИН янтарный = ты/клиент (единственная искра). При передаче
    лента упрощается в кольцо r=100 и хэндофф в #pring. Псевдо-3D на своём canvas. */
-.mobiusring{position:fixed;left:50%;top:50%;width:min(74vw,300px);aspect-ratio:1;
+.mobiusring{position:fixed;left:50%;top:50%;width:min(80vw,400px);aspect-ratio:1;
   z-index:14;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
   will-change:transform,opacity}
 .mobiusring canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-/* текст: слово — в «глазу» ленты; cyc/sub — подписью ПОД лентой (не на дугах).
-   В финале (лента стала кольцом r=100) sub поднимается ближе к центру — стык с #pring */
-.mrcenter{position:absolute;inset:0;text-align:center}
-.mrword{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);
-  font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.08;
-  font-size:clamp(1.02rem,2.5vw,1.45rem);color:var(--ztext);transition:opacity .35s ease}
-.mrcyc{position:absolute;left:0;right:0;top:70%;
-  font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;color:var(--zdim);
-  white-space:nowrap;line-height:1.5;transition:opacity .35s ease}
-.mrsub{position:absolute;left:0;right:0;top:78%;
-  font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--zfaint);transition:opacity .35s ease,top .35s ease}
-.mobiusring.endstate .mrsub{top:60%}
+/* текст: весь блок (слово + cyc + sub) живёт по ЦЕНТРУ «глаза» ленты, компактной
+   flex-колонкой — не под лентой и не на дугах. */
+.mrcenter{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.1rem;text-align:center;padding:0 14%}
+/* state-1: блок выше (word+cyc+sub) — приподнят в широкую зону «глаза»;
+   в state-2/3 cyc схлопнут (display) и блок центрируется как у #pring (стык хэндоффа) */
+.mobiusring.st1 .mrcenter{transform:translateY(-2%)}
+.mrword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.05;
+  font-size:clamp(.92rem,2.2vw,1.3rem);color:var(--ztext);transition:opacity .35s ease}
+.mrcyc{font-family:var(--mono);font-size:.48rem;letter-spacing:.01em;color:var(--zdim);
+  max-width:32%;text-wrap:balance;line-height:1.4;transition:opacity .35s ease}
+.mrsub{font-family:var(--mono);font-size:.48rem;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--zfaint);max-width:26%;text-wrap:balance;line-height:1.3;transition:opacity .35s ease}
 
 .tiercol{display:flex;flex-direction:column}
 .tier{padding:clamp(2.2rem,7vh,4.4rem) 0;border-bottom:1px solid var(--zline);
@@ -345,9 +345,13 @@ body.light .hint,body.light .credits{opacity:0}
   .tier{padding:clamp(1.9rem,6vh,3rem) 0}
   .tier.climax{margin-top:1.6rem}
   /* лента Мёбиуса на мобиле — центр экрана, чуть выше середины (низ под теги) */
-  .mobiusring{width:min(62vw,220px);top:44%}
-  .mrword{font-size:1rem}
-  .mrcyc{font-size:.5rem}   /* этапы одной строкой внутри 220px */
+  .mobiusring{width:min(74vw,270px);top:44%}
+  .mrword{font-size:.8rem;line-height:1.04}
+  .mrcyc{font-size:.4rem;line-height:1.2;max-width:34%}   /* этапы короткими строками внутри «глаза» 270px */
+  .mrsub{font-size:.38rem;letter-spacing:.05em;max-width:32%}  /* нижний ряд глаза уже — короче строка */
+  .mrcenter{gap:.06rem}
+  /* глаз 270px ниже — компактный блок state-1, подъём мягче чем на десктопе */
+  .mobiusring.st1 .mrcenter{transform:translateY(-2%)}
 }
 @media (prefers-reduced-motion:reduce){
   .pring.closed>svg{animation:none}
@@ -1228,8 +1232,8 @@ body.light .hint,body.light .credits{opacity:0}
     /* настраиваемые константы (вся геометрия/тайминги ленты) */
     const CFG={
       VB:240, CX:120, CY:120,      // логическая система координат (как viewBox старого шва)
-      R:62,                        // радиус центральной линии ленты
-      BAND:17,                     // полуширина ленты
+      R:74,                        // радиус центральной линии ленты
+      BAND:23,                     // полуширина ленты
       TILT:57*Math.PI/180,         // наклон обзора (псевдо-3D)
       FOCAL:520,                   // фокус перспективы (глубина)
       SEG:132,                     // сегментов-квадов вдоль ленты
@@ -1263,9 +1267,12 @@ body.light .hint,body.light .credits{opacity:0}
     /* параметры морфа ленты из прогрессов */
     function makeP(coilP,breakP){
       const collapse=smooth(0,CFG.COLLAPSE_END,breakP);
+      // мобайл: «глаз» ленты тесен под 3 строки текста — чуть шире радиус / уже band,
+      // лента остаётся заметно толще исходной (17), просто пропорция под маленький canvas
+      const rBase=WIDE?CFG.R:CFG.R*1.05, bandBase=WIDE?CFG.BAND:CFG.BAND*0.75;
       return {
-        R:      lerp(CFG.R, CFG.R_RING, collapse),
-        band:   lerp(CFG.BAND, 3, collapse),
+        R:      lerp(rBase, CFG.R_RING, collapse),
+        band:   lerp(bandBase, 3, collapse),
         tilt:   lerp(CFG.TILT, 4*Math.PI/180, collapse),
         A:      1-collapse,                       // амплитуда перекрута (1=Мёбиус, 0=кольцо)
         energy: 1-smooth(0.15,0.85,breakP),       // яркость ленты гаснет при передаче
@@ -1395,7 +1402,7 @@ body.light .hint,body.light .credits{opacity:0}
     }
     function sizeCanvas(){
       WIDE=window.innerWidth>=760;
-      cssSize=WIDE?Math.min(window.innerWidth*0.74,300):Math.min(window.innerWidth*0.62,220);
+      cssSize=WIDE?Math.min(window.innerWidth*0.80,400):Math.min(window.innerWidth*0.74,270);
       DPR=Math.min(window.devicePixelRatio||1,2);
       cv.width=Math.round(cssSize*DPR); cv.height=Math.round(cssSize*DPR);
       sc=cssSize/CFG.VB*DPR;
@@ -1422,9 +1429,9 @@ body.light .hint,body.light .credits{opacity:0}
       if(breakP<0.12){ word="у ленты<br>нет шва"; cyc=true; sub="крутится сама"; }
       else if(breakP<0.72){ word="а теперь —<br>твоя лента"; }
       else { word="твой цикл"; sub="0% цикла"; }
-      ring.classList.toggle("endstate", breakP>=0.72);  // sub поднимается к центру кольца
       if(mrword.dataset.w!==word){ mrword.innerHTML=word; mrword.dataset.w=word; }
-      mrcyc.style.opacity=cyc?"1":"0";
+      mrcyc.style.display=cyc?"":"none";      // collapse: невидимый cyc не распирает центр-блок
+      ring.classList.toggle("st1",cyc);
       if(mrsub.textContent!==sub) mrsub.textContent=sub;
       mrsub.style.opacity=sub?"1":"0";
 
