@@ -1346,8 +1346,8 @@ body.light .hint,body.light .credits{opacity:0}
       // чтобы лента под заголовок пакетов была чистой (dots/транспорт живут дольше — не тут)
       const lf=1-smooth(0.05,0.16,prog.brk);
       if(lf<=0.01 || (coldA<=0.01 && emberA<=0.01)) return;
-      const fs=WIDE?8.6:7;                       // VB-размер (× sc → device px)
-      const pad=WIDE?6:7;                         // отступ за внешнюю кромку ленты (мобайл дальше — с полотна)
+      const fs=WIDE?9.6:8.4;                     // VB-размер (× sc → device px); крупнее — читаемость с телефона
+      const pad=WIDE?6.5:7.5;                     // отступ за внешнюю кромку ленты (мобайл дальше — с полотна)
       sctx.save();
       sctx.font=fs+'px "IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
       sctx.textAlign="center"; sctx.textBaseline="middle";
@@ -1374,7 +1374,7 @@ body.light .hint,body.light .credits{opacity:0}
       }
       items.sort((m,n)=>m.depth-n.depth);          // дальние сначала → ближние поверх
       // хало цвета фона зоны (--zbg #F6F8FB): подпись читается и на синем полотне/жгуте
-      sctx.lineJoin="round"; sctx.lineWidth=3;
+      sctx.lineJoin="round"; sctx.lineWidth=3.4;
       for(const it of items){
         sctx.strokeStyle=rgba([246,248,251],Math.min(1,it.a*1.5));
         sctx.strokeText(it.t,it.lx,it.ly);
