@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIRE — Hero + Scan + What-we-do + Packages (Phase 2 prototype v4)</title>
+<title>AIRE — Hero + Scan + What-we-do + Packages (Phase 2 prototype v6 · yellow clients)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;700;800&family=Besley:wght@800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,7 +29,8 @@
   --line:rgba(233,236,241,.14); --line-soft:rgba(233,236,241,.09);
   --accent:#5B9BFF; --volt:#2563EB; --steel:#3A72C4; --ice:#9EC4FF;
   --dead:#79818E;
-  --ember:#E8A54B;            /* Agent Ember — единая янтарная искра живого агента (гейт/надежда + CTA-забота в пакетах) */
+  --ember:#E8A54B;            /* Agent Ember = КЛИЕНТЫ. Жёлтый поток людей: сначала у конкурентов, после надежды — у тебя, дальше ведёт весь сайт */
+  --ember-deep:#C77E1F;       /* тот же янтарь для светлой зоны (читаемость на белом) */
   --zbg:#F6F8FB; --ztext:#10151D; --zdim:#4A5361; --zfaint:#5C6572;
   --zline:rgba(16,21,29,.14);
   --disp:"Geist",system-ui,-apple-system,sans-serif;
@@ -155,11 +156,11 @@ body.light .hint,body.light .credits{opacity:0}
 .thread{position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);
   background:rgba(37,99,235,.13);border-radius:2px}
 .thread .fill{position:absolute;top:0;left:0;width:100%;height:0%;
-  background:linear-gradient(180deg,var(--accent),var(--volt));
-  box-shadow:0 0 12px rgba(37,99,235,.45);border-radius:2px}
+  background:linear-gradient(180deg,var(--ember),var(--ember-deep));
+  box-shadow:0 0 12px rgba(199,126,31,.45);border-radius:2px}
 .thread .spark{position:absolute;left:50%;top:0%;transform:translate(-50%,-50%);
-  width:8px;height:8px;border-radius:50%;background:var(--accent);
-  box-shadow:0 0 14px rgba(91,155,255,.9),0 0 30px rgba(37,99,235,.5);opacity:0}
+  width:8px;height:8px;border-radius:50%;background:var(--ember);
+  box-shadow:0 0 14px rgba(232,165,75,.9),0 0 30px rgba(199,126,31,.5);opacity:0}
 /* ШОВ №2: реальный canvas-жгут ядра заменяет DOM-нить (леса) в зоне «что делаем».
    Зона прозрачна — сквозь неё виден fixed-canvas #c, он же красит светлый фон. */
 #dowhat{background:transparent}
@@ -169,7 +170,7 @@ body.light .hint,body.light .credits{opacity:0}
   margin-bottom:clamp(4rem,11vh,7.5rem)}
 .stage .node{grid-column:2;grid-row:1;justify-self:center;width:15px;height:15px;border-radius:50%;
   border:2px solid rgba(37,99,235,.3);background:var(--zbg);transition:all .45s ease}
-.stage.on .node{background:var(--volt);border-color:var(--volt);box-shadow:0 0 16px rgba(37,99,235,.55)}
+.stage.on .node{background:var(--ember-deep);border-color:var(--ember-deep);box-shadow:0 0 16px rgba(199,126,31,.55)}
 .stage .card{grid-row:1;opacity:.22;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
 .stage.on .card{opacity:1;transform:none}
 .stage:nth-of-type(odd) .card{grid-column:1;text-align:right}
@@ -242,46 +243,47 @@ body.light .hint,body.light .credits{opacity:0}
 .pringcol{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center}
 .pring{position:relative;width:min(78%,300px);aspect-ratio:1}
 .pring>svg{width:100%;height:100%;display:block}
-.pring .trk{fill:none;stroke:rgba(37,99,235,.13);stroke-width:5.5}
+.pring .trk{fill:none;stroke:rgba(29,79,196,.14);stroke-width:5.5}
 .pring .fil{fill:none;stroke:url(#pgrad);stroke-width:6;stroke-linecap:round;
   stroke-dasharray:628.318;stroke-dashoffset:628.318;
   transition:stroke-dashoffset .8s cubic-bezier(.16,1,.3,1)}
-.pring.closed .fil{filter:drop-shadow(0 0 9px rgba(37,99,235,.5))}
+.pring.closed .fil{filter:drop-shadow(0 0 9px rgba(37,99,235,.45))}
+/* точка-искра = ты/клиент на дуге цикла; гаснет к The Loop — искру подхватывает .cta.ember */
+.pring .pdot{fill:var(--ember);filter:drop-shadow(0 0 7px rgba(232,165,75,.9));
+  transition:opacity .35s ease}
 .pring.closed>svg{animation:spin 30s linear infinite}
 .pcenter{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;padding:0 14%}
 .pword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;
   font-size:clamp(1.05rem,2.5vw,1.5rem);color:var(--ztext);line-height:1.12;transition:opacity .4s ease}
-.pcyc{font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;color:var(--volt);
+.pcyc{font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;color:var(--zdim);
   margin-top:.7rem;max-width:12ch;line-height:1.55;opacity:0;transition:opacity .5s ease}
 .pring.closed .pcyc{opacity:1}
 .pnums{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
   text-transform:uppercase;color:var(--zfaint);margin-top:.55rem}
-.pring{opacity:0;transition:opacity .5s ease}   /* штатное кольцо ждёт хэндоффа от кольца-кондуита */
+.pring{opacity:0;transition:opacity .5s ease}   /* штатное кольцо ждёт хэндоффа от ленты Мёбиуса */
 
-/* ШОВ №1 — кольцо-кондуит: нить «что делаем» СВОРАЧИВАЕТСЯ в петлю, замыкается
-   (идеал), РАЗРЫВАЕТ обод в «твою» петлю и сливается в 0% — потом хэндофф в #pring.
-   Один непрерывный ток, одно существо на всём шве. */
-.coilring{position:fixed;left:50%;top:50%;width:min(74vw,300px);aspect-ratio:1;
-  z-index:14;pointer-events:none;opacity:0;
-  transform:translate(-50%,-50%);will-change:transform,opacity}
-.coilring>svg{width:100%;height:100%;display:block;overflow:visible}
-.coilring .crtrk{fill:none;stroke:rgba(37,99,235,.12);stroke-width:5.5}
-.coilring .crtail,.coilring .crfil{fill:none;stroke:url(#cgrad);stroke-width:6;stroke-linecap:round}
-.coilring .crfil{stroke-dasharray:628.318;stroke-dashoffset:628.318}
-.coilring.closed .crfil,.coilring.closed .crtail{filter:drop-shadow(0 0 10px rgba(37,99,235,.5))}
-.coilring .crspin{transform-origin:120px 120px}
-.coilring.closed .crspin{animation:spin 26s linear infinite}
-.coilring .crdot{fill:var(--accent);filter:drop-shadow(0 0 7px rgba(91,155,255,.95))}
-.crcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;padding:0 15%}
-.crword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.08;
+/* ШОВ №1 — Мёбиус-конвейер: янтарная нить «что делаем» ПЕРЕКРУЧИВАЕТСЯ в холодную
+   ленту Мёбиуса (у ленты нет шва — «крутится сама» буквально); по ленте циркулируют
+   4 холодных пакета-этапа + ОДИН янтарный = ты/клиент (единственная искра). При передаче
+   лента упрощается в кольцо r=100 и хэндофф в #pring. Псевдо-3D на своём canvas. */
+.mobiusring{position:fixed;left:50%;top:50%;width:min(74vw,300px);aspect-ratio:1;
+  z-index:14;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
+  will-change:transform,opacity}
+.mobiusring canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* текст: слово — в «глазу» ленты; cyc/sub — подписью ПОД лентой (не на дугах).
+   В финале (лента стала кольцом r=100) sub поднимается ближе к центру — стык с #pring */
+.mrcenter{position:absolute;inset:0;text-align:center}
+.mrword{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);
+  font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.08;
   font-size:clamp(1.02rem,2.5vw,1.45rem);color:var(--ztext);transition:opacity .35s ease}
-.crword.tny{font-size:clamp(.86rem,2.1vw,1.12rem)}
-.crcyc{font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;color:var(--volt);
-  margin-top:.55rem;max-width:13ch;line-height:1.5;transition:opacity .35s ease}
-.crsub{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--zfaint);margin-top:.5rem;transition:opacity .35s ease}
+.mrcyc{position:absolute;left:0;right:0;top:70%;
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;color:var(--zdim);
+  white-space:nowrap;line-height:1.5;transition:opacity .35s ease}
+.mrsub{position:absolute;left:0;right:0;top:78%;
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--zfaint);transition:opacity .35s ease,top .35s ease}
+.mobiusring.endstate .mrsub{top:60%}
 
 .tiercol{display:flex;flex-direction:column}
 .tier{padding:clamp(2.2rem,7vh,4.4rem) 0;border-bottom:1px solid var(--zline);
@@ -342,15 +344,16 @@ body.light .hint,body.light .credits{opacity:0}
   .pcenter{padding:0 6%}
   .tier{padding:clamp(1.9rem,6vh,3rem) 0}
   .tier.climax{margin-top:1.6rem}
-  /* кольцо-кондуит на мобиле — центр экрана, чуть выше середины (низ под теги) */
-  .coilring{width:min(62vw,220px);top:44%}
-  .crword{font-size:1rem}
-  .crword.tny{font-size:.9rem}
+  /* лента Мёбиуса на мобиле — центр экрана, чуть выше середины (низ под теги) */
+  .mobiusring{width:min(62vw,220px);top:44%}
+  .mrword{font-size:1rem}
+  .mrcyc{font-size:.5rem}   /* этапы одной строкой внутри 220px */
 }
 @media (prefers-reduced-motion:reduce){
   .pring.closed>svg{animation:none}
-  .tier,.pring .fil{transition:none}
-  .coilring.closed .crspin{animation:none}
+  .tier,.pring .fil,.pring .pdot{transition:none}
+  /* лента: смена 3 текстовых фаз мгновенно, без fade (сама лента статична — гейт в JS) */
+  .mrword,.mrcyc,.mrsub{transition:none}
 }
 </style>
 </head>
@@ -445,24 +448,17 @@ body.light .hint,body.light .credits{opacity:0}
 </div>
 
 <div class="hint" id="hint">scroll</div>
-<div class="credits">Core-eye · scan + light + packages<br>0 credits · Phase 2 prototype v5 · seam #1</div>
+<div class="credits">Core-eye · scan + light + packages<br>0 credits · Phase 2 prototype v7 · möbius seam</div>
 
-<!-- ШОВ №1: кольцо-кондуит — нить сворачивается в петлю, замыкается,
-     разрывается в «твою» петлю, сливается в 0%, затем хэндофф в #pring -->
-<div class="coilring" id="coilRing" aria-hidden="true">
-  <svg viewBox="0 0 240 240">
-    <defs><linearGradient id="cgrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#2563EB"/>
-    </linearGradient></defs>
-    <circle class="crtrk" cx="120" cy="120" r="100"/>
-    <path class="crtail" id="crtail" d="M120,-34 L120,20" style="stroke-dasharray:54;stroke-dashoffset:54"/>
-    <g class="crspin"><circle class="crfil" id="crfil" cx="120" cy="120" r="100" transform="rotate(-90 120 120)"/></g>
-    <circle class="crdot" id="crdot" r="0" cx="120" cy="20"/>
-  </svg>
-  <div class="crcenter">
-    <div class="crword" id="crword">петля<br>замыкается</div>
-    <div class="crcyc" id="crcyc">найти · продать · обслужить · учиться&nbsp;⟳</div>
-    <div class="crsub" id="crsub">и крутится сама</div>
+<!-- ШОВ №1: Мёбиус-конвейер — янтарная нить перекручивается в холодную ленту
+     Мёбиуса (canvas); по ленте 4 холодных пакета + 1 янтарный (ты/клиент);
+     при передаче лента упрощается в кольцо, затем хэндофф в #pring -->
+<div class="mobiusring" id="mobiusRing" aria-hidden="true">
+  <canvas id="mobiusCanvas"></canvas>
+  <div class="mrcenter">
+    <div class="mrword" id="mrword">у ленты<br>нет шва</div>
+    <div class="mrcyc"  id="mrcyc">найти · продать · обслужить · учиться&nbsp;⟳</div>
+    <div class="mrsub"  id="mrsub">крутится сама</div>
   </div>
 </div>
 
@@ -531,9 +527,9 @@ body.light .hint,body.light .credits{opacity:0}
         </div>
       </div>
 
-      <!-- шов №1: нить не обрывается колечком — она уходит вниз и СВОРАЧИВАЕТСЯ
-           в кольцо-кондуит (#coilRing), который замыкается по центру экрана.
-           Этот блок теперь спейсер: даёт скролл-простор для завитка и замыкания. -->
+      <!-- шов №1: нить не обрывается колечком — она уходит вниз и ПЕРЕКРУЧИВАЕТСЯ
+           в ленту Мёбиуса (#mobiusRing) по центру экрана.
+           Этот блок теперь спейсер: даёт скролл-простор для перекрута и жизни ленты. -->
       <div class="close seamgap" id="loopClose" aria-hidden="true"></div>
     </div>
 
@@ -558,10 +554,11 @@ body.light .hint,body.light .credits{opacity:0}
         <div class="pring" id="pring">
           <svg viewBox="0 0 240 240" aria-hidden="true">
             <defs><linearGradient id="pgrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#2563EB"/>
+              <stop offset="0" stop-color="#3A72C4"/><stop offset="1" stop-color="#2563EB"/>
             </linearGradient></defs>
             <circle class="trk" cx="120" cy="120" r="100"/>
             <circle class="fil" id="pfil" cx="120" cy="120" r="100" transform="rotate(-90 120 120)"/>
+            <circle class="pdot" id="pdot" r="5" cx="120" cy="20"/>
           </svg>
           <div class="pcenter">
             <div class="pword" id="pword">твой цикл</div>
@@ -639,7 +636,9 @@ body.light .hint,body.light .credits{opacity:0}
   const canvas=document.getElementById("c"), ctx=canvas.getContext("2d");
   const reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
   const COL={accent:[91,155,255],volt:[37,99,235],steel:[58,114,196],ice:[158,196,255],
-             dead:[121,129,142],ember:[232,165,75]};
+             dead:[121,129,142],ember:[232,165,75],
+             emberIce:[255,216,154],   // тёплый «лёд» — светлые блики жёлтой стороны
+             gold:[199,126,31]};       // ember-deep — жёлтый ток на светлом фоне
   const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
   const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -772,22 +771,27 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
   // competitor card — ЧИТАЕМАЯ для не-IT владельца (фидбек Влада):
-  // не абстрактные полоски, а «конкурент №N» + «★ 4,8 · 213 отзывов»
-  function foundCard(x,y,appear,pulse,i){
+  // не абстрактные полоски, а «конкурент №N» + «★ 4,8 · 213 отзывов».
+  // ФЛИП КЛИЕНТОВ: пока клиенты у них — карточки ЖЁЛТЫЕ; на надежде ты
+  // крадёшь поток — конкуренты остывают в синий (hope: 0 ember → 1 steel)
+  function foundCard(x,y,appear,pulse,i,hope){
     if(appear<=0.01)return;
+    hope=hope||0;
+    const cc=mix(COL.ember,COL.steel,hope);       // рамка/глоу/чек
+    const tc=mix(COL.emberIce,COL.ice,hope);      // строка рейтинга
     const w=WIDE?172:130, h=WIDE?44:40, r=10;
     x=clamp(x, w/2+8, W-w/2-8);          // карточка всегда целиком в экране
     const gx=x-w/2, gy=y-h/2;
     const gl=0.5+0.5*Math.sin(pulse*TAU);
-    orb(x,y,w*0.6,COL.accent,0.12*appear*(0.6+gl*0.4));
+    orb(x,y,w*0.6,cc,0.12*appear*(0.6+gl*0.4));
     ctx.globalCompositeOperation="source-over";
     ctx.fillStyle=rgba([16,22,29],0.78*appear);
     rrect(gx,gy,w,h,r);ctx.fill();
-    ctx.lineWidth=1.2;ctx.strokeStyle=rgba(COL.accent,(0.55+0.35*gl)*appear);
+    ctx.lineWidth=1.2;ctx.strokeStyle=rgba(cc,(0.55+0.35*gl)*appear);
     rrect(gx,gy,w,h,r);ctx.stroke();
     // check dot
     const cxd=gx+17, cyd=y;
-    ctx.fillStyle=rgba(COL.accent,0.9*appear);ctx.beginPath();ctx.arc(cxd,cyd,7.5,0,TAU);ctx.fill();
+    ctx.fillStyle=rgba(cc,0.9*appear);ctx.beginPath();ctx.arc(cxd,cyd,7.5,0,TAU);ctx.fill();
     ctx.strokeStyle=rgba([255,255,255],0.95*appear);ctx.lineWidth=1.7;ctx.lineCap="round";
     ctx.beginPath();ctx.moveTo(cxd-3,cyd);ctx.lineTo(cxd-0.6,cyd+2.6);ctx.lineTo(cxd+3.2,cyd-2.8);ctx.stroke();
     // plain-language lines (минимализм на мобиле: без слова «отзывов»)
@@ -798,7 +802,7 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.fillStyle=rgba([233,236,241],0.92*appear);
     ctx.fillText("конкурент №"+(i+1), gx+32, gy+(WIDE?19:17));
     ctx.font=(WIDE?"500 10px":"500 9.5px")+" IBM Plex Mono, monospace";
-    ctx.fillStyle=rgba(COL.ice,0.75*appear);
+    ctx.fillStyle=rgba(tc,0.75*appear);
     ctx.fillText("★ "+rating+(WIDE?" · "+reviews+" отзывов":" · "+reviews), gx+32, gy+(WIDE?34:31));
     ctx.textAlign="center";
     ctx.globalCompositeOperation="lighter";
@@ -806,20 +810,22 @@ body.light .hint,body.light .credits{opacity:0}
 
   // YOUR business = СИМВОЛ, не текст-плашка (фидбек Влада): круглый
   // медальон-объект с витриной внутри, исходит из ядра; подпись под ним
+  // ФЛИП: до надежды медальон холодно-синий/мёртвый («не найден»),
+  // на надежде загорается ЖЁЛТЫМ — клиенты теперь у тебя
   function youCard(x,y,appear,lit,label,themN,scale){
     if(appear<=0.01)return;
     const rr=(WIDE?36:31)*(scale||1);
     ctx.globalCompositeOperation="source-over";
-    if(lit>0.01) orb(x,y,rr*3.2,COL.accent,0.22*lit);
+    if(lit>0.01) orb(x,y,rr*3.2,COL.ember,0.26*lit);
     // medallion
     ctx.fillStyle=rgba([13,17,23],0.85*appear);
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
     ctx.setLineDash(lit>0.5?[]:[6,5]);
     ctx.lineWidth=1.7;
-    ctx.strokeStyle=rgba(lit>0.5?COL.accent:COL.dead,(lit>0.5?0.95:0.55)*appear);
+    ctx.strokeStyle=rgba(lit>0.5?COL.ember:COL.dead,(lit>0.5?0.95:0.55)*appear);
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.stroke();ctx.setLineDash([]);
     // map-pin symbol inside — «твоё место в среде» (домик забракован)
-    const base=lit>0.5?COL.ice:COL.dead;
+    const base=lit>0.5?COL.emberIce:COL.dead;
     const pr=rr*0.36, yc=y-rr*0.18;
     ctx.strokeStyle=rgba(base,0.95*appear);ctx.lineWidth=1.7;ctx.lineCap="round";ctx.lineJoin="round";
     ctx.beginPath();
@@ -830,23 +836,23 @@ body.light .hint,body.light .credits{opacity:0}
     // check badge on hope
     if(lit>0.5){
       const bx=x+rr*0.72, by=y-rr*0.72;
-      ctx.fillStyle=rgba(COL.accent,0.95);ctx.beginPath();ctx.arc(bx,by,9,0,TAU);ctx.fill();
-      ctx.strokeStyle=rgba([255,255,255],0.95);ctx.lineWidth=1.8;ctx.lineCap="round";
+      ctx.fillStyle=rgba(COL.ember,0.95);ctx.beginPath();ctx.arc(bx,by,9,0,TAU);ctx.fill();
+      ctx.strokeStyle=rgba([28,19,5],0.95);ctx.lineWidth=1.8;ctx.lineCap="round";
       ctx.beginPath();ctx.moveTo(bx-3.4,by);ctx.lineTo(bx-0.8,by+2.8);ctx.lineTo(bx+3.6,by-3);ctx.stroke();
     }
     // labels UNDER the symbol
     ctx.textAlign="center";
     ctx.font="700 13.5px Public Sans, sans-serif";
-    ctx.fillStyle=rgba(lit>0.5?COL.ice:[201,206,214],0.95*appear);
+    ctx.fillStyle=rgba(lit>0.5?COL.emberIce:[201,206,214],0.95*appear);
     ctx.fillText(label.slice(0,20), x, y+rr+22);
     ctx.font="500 10px IBM Plex Mono, monospace";
-    ctx.fillStyle=rgba(lit>0.5?COL.accent:COL.dead,0.9*appear);
+    ctx.fillStyle=rgba(lit>0.5?COL.ember:COL.dead,0.9*appear);
     ctx.fillText(lit>0.5?"виден в среде":"не найдено", x, y+rr+39);
     // счёт — третья строка подписи медальона ТОЛЬКО на мобиле (там большой
     // DOM-счётчик скрыт); на десктопе счёт живёт в большом счётчике — без дублей
     if(!WIDE && lit<=0.5 && themN>0){
       ctx.font="500 10.5px IBM Plex Mono, monospace";
-      ctx.fillStyle=rgba(COL.accent,0.8*appear);
+      ctx.fillStyle=rgba(COL.ember,0.8*appear);
       ctx.fillText("нашли: их "+themN+" · тебя 0", x, y+rr+58);
     }
     ctx.globalCompositeOperation="lighter";
@@ -864,7 +870,7 @@ body.light .hint,body.light .credits{opacity:0}
       c.appear+=(tgt-c.appear)*0.08;
       c.pulse=(c.pulse+0.004)%1;
       const p=ringPos(a, a.youAng+c.off, (0.22+0.78*c.appear)*(1+0.12*hope));
-      foundCard(p.x, p.y, c.appear*intensity*(1-0.45*hope), c.pulse, i);
+      foundCard(p.x, p.y, c.appear*intensity*(1-0.45*hope), c.pulse, i, hope);
     }
     // YOU — ЦЕНТРАЛЬНЫЙ элемент: рождается из ядра; на надежде
     // притягивается обратно к ядру и растёт (из центра, не с края)
@@ -882,10 +888,10 @@ body.light .hint,body.light .credits{opacity:0}
       for(let r=0;r<2;r++){
         const gr=rr0*(1.0+ (ignite+r*0.22)*2.6);
         ctx.lineWidth=(2.4-r*0.9)*pop;
-        ctx.strokeStyle=rgba(COL.accent, (0.7-r*0.3)*pop*intensity);
+        ctx.strokeStyle=rgba(COL.ember, (0.7-r*0.3)*pop*intensity);
         ctx.beginPath();ctx.arc(yp.x,yp.y,gr,0,TAU);ctx.stroke();
       }
-      orb(yp.x,yp.y, rr0*(1.4+pop*1.8), COL.accent, 0.35*pop*intensity);
+      orb(yp.x,yp.y, rr0*(1.4+pop*1.8), COL.ember, 0.35*pop*intensity);
     }
     youCard(yp.x, yp.y, youAppear, hope, biz, themN, 1+0.55*hope);
 
@@ -894,18 +900,20 @@ body.light .hint,body.light .credits{opacity:0}
       const n = intensity>0.5?3:1;
       for(let k=0;k<n;k++){ if(Math.random()<intensity*0.7) spawnFlow(hope>0.4 && Math.random()<hope); }
     }
+    // поток людей = ВСЕГДА ЖЁЛТЫЙ (клиенты); крупнее — на телефоне видно
     for(let i=FLOW.length-1;i>=0;i--){
       const f=FLOW[i]; f.t+=f.sp*(reduced?0:1);
       if(f.t>=1){FLOW.splice(i,1);continue;}
       const e=f.t*f.t*(3-2*f.t);
       const px=f.sx+(f.tx-f.sx)*e, py=f.sy+(f.ty-f.sy)*e;
-      const c=f.you?COL.ember:COL.accent;
-      orb(px,py,2.6,c,0.5*intensity*(1-Math.abs(f.t-0.5)*1.4));
+      const c=f.you?COL.emberIce:COL.ember;
+      orb(px,py,WIDE?3.4:4.4,c,0.62*intensity*(1-Math.abs(f.t-0.5)*1.4));
     }
     // live counter numbers
     cThem.textContent = Math.round(smooth(0.1,0.45,energy)*12);
     cYou.textContent  = hope>0.5 ? "1" : "0";
-    counter.querySelector(".num.you").style.color = hope>0.5 ? "var(--accent)" : "var(--dead)";
+    counter.querySelector(".num.you").style.color = hope>0.5 ? "var(--ember)" : "var(--dead)";
+    counter.querySelector(".num.them").style.color = hope>0.5 ? "var(--steel)" : "var(--ember)";
   }
 
   // ---------- core: vortex (hero) morphs into an EYE (scan/hope) ----------
@@ -1011,7 +1019,7 @@ body.light .hint,body.light .credits{opacity:0}
       if(hope>0.05){
         const tgt=yp;
         const g=ctx.createLinearGradient(pux,puy,tgt.x,tgt.y);
-        g.addColorStop(0,rgba(COL.ember,0.5*hope));g.addColorStop(1,rgba(COL.accent,0.15*hope));
+        g.addColorStop(0,rgba(COL.ember,0.5*hope));g.addColorStop(1,rgba(COL.ember,0.18*hope));
         ctx.strokeStyle=g;ctx.lineWidth=1.4+2*hope;ctx.beginPath();ctx.moveTo(pux,puy);ctx.lineTo(tgt.x,tgt.y);ctx.stroke();
       }
     }
@@ -1066,39 +1074,58 @@ body.light .hint,body.light .credits{opacity:0}
   // Живая инверсия: тот же рой не гаснет — на свету становится тёмно-волтовым
   // жгутом (source-over вместо additive). Петля размотана в вертикаль тока;
   // бегущий кончик = «узел-вспышка», добегая до этапа, зажигает его (DOM .stage.on).
-  const TH={loopTop:0,loopH:0,pct:0,inView:false};
+  const TH={loopTop:0,loopH:0,pct:0,zTop:1e5,zBot:1e5};
+  // РЕАЛЬНЫЙ шейдер-рой ядра (VP вихрь + MP möbius-ток) переформирован в
+  // вертикальный жгут и течёт НЕПРЕРЫВНО: рождается стеблем из центра ядра
+  // на белеющем рассвете (НЕ из пустоты), затем питается сверху сквозь всю
+  // светлую зону. Тёмно-волтовый на светлом (source-over).
   function drawThread(t){
-    if(!TH.inView) return;
-    const vh=H;
-    const lit=smooth(0.72,0.9,energy);                       // свет пришёл → ядро инвертировалось
+    const lit=smooth(0.92,0.995,energy);                     // проявляется, как белый флуд накрывает глаз
     if(lit<=0.01) return;
-    const outFade=clamp((TH.loopTop+TH.loopH)/(vh*0.4),0,1); // гаснет, уходя вверх к шву №1
-    const show=lit*outFade;
-    if(show<=0.01) return;
-    const x=CX;
-    const topY=Math.min(TH.loopTop,CY);                      // рождается из центра ядра на шве
-    const botY=TH.loopTop+TH.loopH;
-    const tipY=clamp(TH.loopTop+TH.pct/100*TH.loopH, topY, botY);
-    ctx.globalCompositeOperation="source-over";
-    // слабый полный след жгута (тёмно-волтовый на светлом)
-    ctx.strokeStyle=rgba(COL.volt,0.12*show); ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(x,topY); ctx.lineTo(x,botY); ctx.stroke();
-    // горячая часть тока: от рождения до бегущего кончика
-    const g=ctx.createLinearGradient(x,topY,x,tipY);
-    g.addColorStop(0,rgba(COL.volt,0.0));
-    g.addColorStop(0.12,rgba(COL.volt,0.5*show));
-    g.addColorStop(1,rgba(COL.volt,0.92*show));
-    ctx.strokeStyle=g; ctx.lineWidth=2.6;
-    ctx.beginPath(); ctx.moveTo(x,topY); ctx.lineTo(x,tipY); ctx.stroke();
-    // частицы тока текут вниз — та же ДНК ядра, тёмные на светлом
-    const span=Math.max(tipY-topY,1), n=WIDE?15:10;
-    for(let i=0;i<n;i++){
-      const fp=((i+1)/(n+1)+t*0.13)%1;
-      orb(x, topY+fp*span, 2.4+2.2*(1-fp), COL.volt, (0.22+0.4*(1-fp))*show);
+    const before=TH.zTop>=H;                                 // зона ещё ниже вьюпорта → хвост тёмного акта
+    const inView=TH.zBot>0 && TH.zTop<H;
+    if(!before && !inView) return;                           // зона выше вьюпорта → это уже пакеты
+    const x=CX; let topY,botY,tipY,show;
+    if(inView){
+      topY=Math.min(CY, Math.max(TH.zTop,-H*0.2));           // из центра ядра → питание сверху по мере скролла
+      botY=Math.min(TH.zBot, H);
+      tipY=clamp(TH.loopTop+TH.pct/100*TH.loopH, topY, botY);
+      show=lit*clamp(TH.zBot/(H*0.5),0,1);                   // гаснет, уходя вверх к пакетам
+    }else{                                                   // стебель-рождение из центра ядра вниз
+      topY=CY; botY=H; tipY=botY; show=lit;
     }
-    // бегущий кончик — узел энергии, что зажигает очередной этап
-    orb(x,tipY,9+3*Math.max(0,Math.sin(t*3)),COL.volt,0.5*show);
-    ctx.fillStyle=rgba(COL.volt,0.95*show); ctx.beginPath(); ctx.arc(x,tipY,3.2,0,TAU); ctx.fill();
+    if(show<=0.01) return;
+    const span=Math.max(botY-topY,1);
+    const amp=R*(WIDE?0.52:0.42);                            // ширина косы вокруг стержня
+    ctx.globalCompositeOperation="source-over";
+    // ЖЁЛТЫЙ ток «ты с клиентами» — украденный поток ведёт через сайт (gold = ember для светлого фона)
+    // слабый направляющий стержень
+    ctx.strokeStyle=rgba(COL.gold,0.12*show); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x,topY); ctx.lineTo(x,botY); ctx.stroke();
+    // те же частицы вихря, расплетённые в косу тока вдоль позвоночника
+    for(const p of VP){
+      const py=topY+((p.u+t*0.05)%1)*span;
+      const lead=py<=tipY+50;                                // выше кончика — «зажжена»
+      const ph=p.arm/ARMS*TAU+p.u*6.0*TAU+t*0.6+p.jit*8;
+      const w=amp*(0.22+0.78*p.u);
+      const px=x+Math.sin(ph)*w;
+      const px2=x+Math.sin(ph-0.28)*w, py2=py-span*0.012;
+      const a=(lead?0.55:0.15)*show;
+      const g=ctx.createLinearGradient(px2,py2,px,py);
+      g.addColorStop(0,rgba(COL.gold,0)); g.addColorStop(1,rgba(COL.gold,a));
+      ctx.strokeStyle=g; ctx.lineWidth=1.1;
+      ctx.beginPath(); ctx.moveTo(px2,py2); ctx.lineTo(px,py); ctx.stroke();
+    }
+    // möbius-ток: яркие бегущие точки по стержню (только в зажжённой части)
+    for(const m of MP){
+      m.u=(m.u+m.sp*0.004)%1;
+      const py=topY+m.u*span;
+      if(py>tipY+60) continue;
+      orb(x+Math.sin(m.u*TAU*3+t)*R*0.12, py, WIDE?2.8:3.4, COL.gold, 0.6*show);
+    }
+    // бегущий кончик — узел, что зажигает очередной этап
+    orb(x,tipY,10+3*Math.max(0,Math.sin(t*3)),COL.gold,0.5*show);
+    ctx.fillStyle=rgba(COL.gold,0.95*show); ctx.beginPath(); ctx.arc(x,tipY,3.4,0,TAU); ctx.fill();
   }
 
   // ---------- narration ----------
@@ -1151,8 +1178,8 @@ body.light .hint,body.light .credits{opacity:0}
       s.classList.toggle("on", passed >= s.offsetTop + s.offsetHeight*0.5);
     }
     closeEl.classList.toggle("on", passed >= total-vh*0.12);
-    // геометрия для canvas-жгута шва №2 (viewport-координаты)
-    TH.loopTop=lr.top; TH.loopH=total; TH.pct=pct; TH.inView=(lr.bottom>0 && lr.top<vh);
+    // геометрия для canvas-жгута шва №2: петля (для кончика) + зона (для непрерывности)
+    TH.loopTop=lr.top; TH.loopH=total; TH.pct=pct; TH.zTop=zr.top; TH.zBot=zr.bottom;
   }
   window.addEventListener("resize",lightScroll);
 
@@ -1161,6 +1188,7 @@ body.light .hint,body.light .credits{opacity:0}
   const ptiers=Array.prototype.slice.call(document.querySelectorAll("#packages .tier")),
         pring=document.getElementById("pring"),
         pfil=document.getElementById("pfil"),
+        pdot=document.getElementById("pdot"),
         pword=document.getElementById("pword"),
         pnums=document.getElementById("pnums");
   const PCIRC=628.318;                 // 2π·100 — длина окружности кольца
@@ -1179,61 +1207,286 @@ body.light .hint,body.light .credits{opacity:0}
     pword.textContent=active>=0?ptiers[active].dataset.word:"твой цикл";
     pnums.textContent=Math.round(fill*100)+"% цикла";
     pring.classList.toggle("closed", fill>=0.999);
+    if(pdot){
+      // точка-искра = ты/клиент, едет по концу заполненной дуги (12 часов при fill=0 —
+      // ровно где гаснет янтарный пакет ленты на хэндоффе: искра продолжает путь)
+      const ang=(-90+fill*360)*Math.PI/180;
+      pdot.setAttribute("cx",(120+100*Math.cos(ang)).toFixed(1));
+      pdot.setAttribute("cy",(120+100*Math.sin(ang)).toFixed(1));
+      // на climax-тарифе гаснет: искру подхватывает ember-CTA The Loop (одна искра на экран)
+      const isClimax=active===ptiers.length-1;
+      pdot.style.opacity=isClimax?Math.max(0,1-(fill-0.85)/0.15):1;
+    }
   }
   window.addEventListener("resize",packagesScroll);
 
-  // ---------- ШОВ №1: кольцо-кондуит (нить → петля → разрыв → 0% → хэндофф в #pring) ----------
-  const coilRing=document.getElementById("coilRing"),
-        crfil=document.getElementById("crfil"),
-        crtail=document.getElementById("crtail"),
-        crdot=document.getElementById("crdot"),
-        crword=document.getElementById("crword"),
-        crcyc=document.getElementById("crcyc"),
-        crsub=document.getElementById("crsub"),
-        seamGap=document.getElementById("loopClose"),
+  // ---------- ШОВ №1: Мёбиус-конвейер (нить → лента → передача → хэндофф в #pring) ----------
+  /* Seam1 — самодостаточный модуль ленты Мёбиуса (псевдо-3D на своём canvas).
+     Контракт: init(targetEl=#pring) · update(coilP,breakP,handP) · tick(t) из общего rAF.
+     Лента холодная (система, steel→volt); единственный янтарь — пакет-клиент. */
+  const Seam1=(function(){
+    /* настраиваемые константы (вся геометрия/тайминги ленты) */
+    const CFG={
+      VB:240, CX:120, CY:120,      // логическая система координат (как viewBox старого шва)
+      R:62,                        // радиус центральной линии ленты
+      BAND:17,                     // полуширина ленты
+      TILT:57*Math.PI/180,         // наклон обзора (псевдо-3D)
+      FOCAL:520,                   // фокус перспективы (глубина)
+      SEG:132,                     // сегментов-квадов вдоль ленты
+      R_RING:100,                  // радиус кольца-цели (= #pring r=100) при схлопывании
+      PACKETS:5,                   // пакетов на ленте (1 янтарный + 4 холодных этапа)
+      SPEED:0.42,                  // скорость циркуляции пакетов (рад/с)
+      SHIMMER:0.9,                 // скорость бегущего блика «фаз потока» (рад/с)
+      COLLAPSE_END:0.72            // breakP, к которому лента полностью стала кольцом
+    };
+    /* палитра Graphite Current (строго; фон зоны светлый) */
+    const STEEL=[58,114,196], VOLT=[37,99,235], FAINT=[150,168,196],
+          EMBER=[232,165,75], ICE=[158,196,255], COLDP=[29,79,196];
+    /* направление фейкового света (для чтения перекрута ленты) */
+    const Ln=Math.hypot(0.35,0.6,0.72), LX=-0.35/Ln, LY=-0.6/Ln, LZ=0.72/Ln;
+
+    const TAU=6.28318530718;
+    const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+    const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+    const lerp=(a,b,t)=>a+(b-a)*t;
+    const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+    const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
+    const UOFF=-Math.PI/2;         // старт ленты у ВЕРХА эллипса (стык с нитью сверху)
+
+    let ring,cv,ctx,mrword,mrcyc,mrsub,target;
+    let reduced=false, DPR=1, cssSize=300, sc=1, WIDE=true, active=false;
+    let prog={coil:0,brk:0,hand:0};
+    let cache={sig:null,quads:null,P:null};
+    let phase=0, shim=0;
+    let coldA=0, emberA=0;         // альфы пакетов (из update)
+
+    /* параметры морфа ленты из прогрессов */
+    function makeP(coilP,breakP){
+      const collapse=smooth(0,CFG.COLLAPSE_END,breakP);
+      return {
+        R:      lerp(CFG.R, CFG.R_RING, collapse),
+        band:   lerp(CFG.BAND, 3, collapse),
+        tilt:   lerp(CFG.TILT, 4*Math.PI/180, collapse),
+        A:      1-collapse,                       // амплитуда перекрута (1=Мёбиус, 0=кольцо)
+        energy: 1-smooth(0.15,0.85,breakP),       // яркость ленты гаснет при передаче
+        revealP:smooth(0,1,clamp(coilP,0,1))*TAU, // сколько ленты вычерчено (формирование)
+        collapse,
+        zr:0
+      };
+    }
+    /* проекция точки ленты (u вдоль, v∈[-1,1] поперёк) в 2D + наклонённые 3D коорды */
+    function project(u,v,P){
+      const a=u*0.5*P.A;
+      const rad=P.R+v*P.band*Math.cos(a);
+      const X=rad*Math.cos(u);
+      const Y=rad*Math.sin(u);
+      const Z=v*P.band*Math.sin(a);
+      const ct=Math.cos(P.tilt), st=Math.sin(P.tilt);
+      const Yt=Y*ct-Z*st;                 // наклон вокруг оси X
+      const Zt=Y*st+Z*ct;                 // глубина
+      const p=CFG.FOCAL/(CFG.FOCAL+Zt);   // перспектива: дальше → мельче
+      return {sx:CFG.CX+X*p, sy:CFG.CY+Yt*p, X:X, Y:Yt, Z:Zt};
+    }
+    /* цвет сегмента: холодный градиент steel→volt + фейковый свет (читаем перекрут) */
+    function shade(c0,c1,c3,zc,P){
+      const e1x=c1.X-c0.X,e1y=c1.Y-c0.Y,e1z=c1.Z-c0.Z;
+      const e2x=c3.X-c0.X,e2y=c3.Y-c0.Y,e2z=c3.Z-c0.Z;
+      const nx=e1y*e2z-e1z*e2y, ny=e1z*e2x-e1x*e2z, nz=e1x*e2y-e1y*e2x;
+      const nl=Math.hypot(nx,ny,nz)||1;
+      const d=Math.abs((nx*LX+ny*LY+nz*LZ)/nl);   // abs — лента односторонняя
+      const bright=0.58+0.5*d;
+      const near=clamp(0.5-zc/(2*P.zr),0,1);      // ближе → насыщеннее (volt)
+      let col=mix(STEEL,VOLT,near);
+      col=[col[0]*bright,col[1]*bright,col[2]*bright];
+      return mix(col,FAINT,1-P.energy);           // при передаче → бледный «трек»
+    }
+    /* построить сегменты-квады ленты (только при смене coilP/breakP) */
+    function buildQuads(P){
+      P.zr=P.R*Math.sin(P.tilt)+P.band;
+      const q=[], N=CFG.SEG, step=TAU/N;
+      for(let i=0;i<N;i++){
+        const p0=i*step, p1=p0+step;
+        if(p1>P.revealP) break;                   // формирование: рисуем до фронта
+        const u0=UOFF+p0, u1=UOFF+p1;
+        const a=project(u0,-1,P), b=project(u0, 1,P),
+              c=project(u1, 1,P), d=project(u1,-1,P);
+        const zc=(a.Z+b.Z+c.Z+d.Z)*0.25;
+        q.push({pts:[a,b,c,d], col:shade(a,b,d,zc,P), z:zc});
+      }
+      q.sort((m,n)=>n.z-m.z);                     // дальние сначала (front-over-back)
+      return q;
+    }
+    function drawQuads(P){
+      const A=0.5+0.45*P.energy;
+      for(const s of cache.quads){
+        const p=s.pts, fs=rgba(s.col,A);
+        sctx.fillStyle=fs; sctx.strokeStyle=fs; sctx.lineWidth=0.7;
+        sctx.beginPath();
+        sctx.moveTo(p[0].sx,p[0].sy);
+        for(let k=1;k<4;k++) sctx.lineTo(p[k].sx,p[k].sy);
+        sctx.closePath(); sctx.fill(); sctx.stroke();
+      }
+    }
+    function packetU(i){ return UOFF+phase+i*(TAU/CFG.PACKETS); }
+    function drawPacket(u,ember,alpha,P){
+      if(alpha<=0.01) return;
+      const p=project(u,0,P);
+      sctx.save();
+      if(ember){
+        sctx.shadowColor=rgba(EMBER,0.9*alpha); sctx.shadowBlur=WIDE?9:11;
+        sctx.fillStyle=rgba(EMBER,alpha);
+        sctx.beginPath(); sctx.arc(p.sx,p.sy,WIDE?4.6:5.4,0,TAU); sctx.fill();
+      }else{
+        sctx.fillStyle=rgba(COLDP,alpha);
+        sctx.beginPath(); sctx.arc(p.sx,p.sy,WIDE?3.1:3.7,0,TAU); sctx.fill();
+      }
+      sctx.restore();
+    }
+    /* пакеты рисуем разбитыми по глубине: дальние — под лентой, ближние — над */
+    function drawPackets(P,front){
+      for(let i=0;i<CFG.PACKETS;i++){
+        const u=packetU(i), z=project(u,0,P).Z, isFront=z<0;
+        if(isFront!==front) continue;
+        const ember=(i===0);
+        drawPacket(u,ember,ember?emberA:coldA,P);
+      }
+    }
+    /* входящая янтарная нить сверху + горящий кончик, что вычерчивает ленту */
+    function drawFormation(P){
+      if(P.revealP>=TAU-0.02) return;
+      const tail=1-smooth(0.05,0.34,prog.coil);
+      if(tail>0.01){
+        const top=project(UOFF,0,P);              // точка входа у верха эллипса
+        sctx.save();
+        sctx.strokeStyle=rgba(EMBER,0.85*tail); sctx.lineWidth=2.4; sctx.lineCap="round";
+        sctx.shadowColor=rgba(EMBER,0.7*tail); sctx.shadowBlur=8;
+        sctx.beginPath(); sctx.moveTo(CFG.CX,2); sctx.lineTo(top.sx,top.sy); sctx.stroke();
+        sctx.restore();
+      }
+      const tip=project(UOFF+P.revealP,0,P);      // янтарный фронт-кончик
+      sctx.save();
+      sctx.shadowColor=rgba(EMBER,0.95); sctx.shadowBlur=12;
+      sctx.fillStyle=rgba(EMBER,0.95);
+      sctx.beginPath(); sctx.arc(tip.sx,tip.sy,WIDE?4.2:5,0,TAU); sctx.fill();
+      sctx.restore();
+    }
+    /* бегущий холодный блик — «вращение фаз потока» по замкнутой ленте */
+    function drawShimmer(P){
+      if(reduced||P.energy<0.05||prog.coil<0.98) return;
+      const u=UOFF+shim, p=project(u,1,P);
+      sctx.save();
+      sctx.globalCompositeOperation="lighter";
+      sctx.shadowColor=rgba(ICE,0.8); sctx.shadowBlur=14;
+      sctx.fillStyle=rgba(ICE,0.5*P.energy);
+      sctx.beginPath(); sctx.arc(p.sx,p.sy,3.2,0,TAU); sctx.fill();
+      sctx.restore();
+    }
+    let sctx=null;   // 2d-контекст собственного canvas ленты (не главный #c!)
+    function render(){
+      if(!sctx||!cache.P) return;
+      const P=cache.P;
+      sctx.setTransform(sc,0,0,sc,0,0);
+      sctx.clearRect(0,0,CFG.VB,CFG.VB);
+      drawPackets(P,false);   // дальние пакеты — под лентой
+      drawQuads(P);
+      drawShimmer(P);
+      drawPackets(P,true);    // ближние пакеты — над лентой
+      drawFormation(P);
+    }
+    function sizeCanvas(){
+      WIDE=window.innerWidth>=760;
+      cssSize=WIDE?Math.min(window.innerWidth*0.74,300):Math.min(window.innerWidth*0.62,220);
+      DPR=Math.min(window.devicePixelRatio||1,2);
+      cv.width=Math.round(cssSize*DPR); cv.height=Math.round(cssSize*DPR);
+      sc=cssSize/CFG.VB*DPR;
+      if(cache.P) render();
+    }
+
+    /* --- публичное: пересчёт при изменении прогрессов --- */
+    function update(coilP,breakP,handP){
+      if(!ring) return;
+      prog.coil=coilP; prog.brk=breakP; prog.hand=handP;
+
+      // геометрию (квады) пересобираем ТОЛЬКО при смене coilP/breakP
+      const sig=coilP.toFixed(3)+"|"+breakP.toFixed(3);
+      if(sig!==cache.sig){
+        const P=makeP(coilP,breakP);
+        cache={sig, P, quads:buildQuads(P)};
+      }
+      // альфы пакетов: холодные тают при передаче, янтарный живёт до конца хэндоффа
+      coldA =smooth(0.85,1,coilP)*(1-smooth(0.12,0.5,breakP));
+      emberA=smooth(0.82,1,coilP)*(1-smooth(0.72,0.98,handP));
+
+      // центр: «у ленты нет шва» → «а теперь — твоя лента» → «твой цикл 0%» (стык с #pring)
+      let word, cyc=false, sub="";
+      if(breakP<0.12){ word="у ленты<br>нет шва"; cyc=true; sub="крутится сама"; }
+      else if(breakP<0.72){ word="а теперь —<br>твоя лента"; }
+      else { word="твой цикл"; sub="0% цикла"; }
+      ring.classList.toggle("endstate", breakP>=0.72);  // sub поднимается к центру кольца
+      if(mrword.dataset.w!==word){ mrword.innerHTML=word; mrword.dataset.w=word; }
+      mrcyc.style.opacity=cyc?"1":"0";
+      if(mrsub.textContent!==sub) mrsub.textContent=sub;
+      mrsub.style.opacity=sub?"1":"0";
+
+      // ТРАНСПОРТ (паттерн старого шва: центр экрана → место #pring, scale, кроссфейд)
+      const vh=window.innerHeight, cxMid=window.innerWidth/2, cyMid=vh*(WIDE?0.5:0.44);
+      let cx=cxMid, cy=cyMid, scale=1;
+      if(target){
+        const pr=target.getBoundingClientRect();
+        const tt=smooth(0.15,0.9,handP);
+        cx=cxMid+((pr.left+pr.width/2)-cxMid)*tt;
+        cy=cyMid+((pr.top+pr.height/2)-cyMid)*tt;
+        scale=1+((pr.width/(cssSize||pr.width))-1)*tt;
+        target.style.opacity=smooth(0.4,0.9,handP);  // #pring зеркально оживает
+      }
+      ring.style.left=cx+"px"; ring.style.top=cy+"px";
+      ring.style.transform="translate(-50%,-50%) scale("+scale.toFixed(3)+")";
+      active=coilP>0.02 && handP<0.98;               // гейт для tick(): вне шва не рендерим
+      ring.style.opacity=(coilP>0.02?1:0)*(1-smooth(0.55,0.98,handP));
+
+      render();
+    }
+
+    /* --- публичное: idle-кадр (циркуляция + блик). reduced/вне шва → без работы --- */
+    function tick(t){
+      if(reduced||!active) return;
+      phase=t*CFG.SPEED;                  // циркуляция пакетов по замкнутой ленте
+      shim =t*CFG.SHIMMER;                // бегущий блик «фаз потока»
+      render();
+    }
+
+    function init(targetEl){
+      ring=document.getElementById("mobiusRing");
+      cv=document.getElementById("mobiusCanvas");
+      if(!ring||!cv) return null;
+      sctx=cv.getContext("2d");
+      mrword=document.getElementById("mrword");
+      mrcyc =document.getElementById("mrcyc");
+      mrsub =document.getElementById("mrsub");
+      target=targetEl||null;
+      reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+      sizeCanvas();
+      window.addEventListener("resize",sizeCanvas);
+      cache.P=makeP(0,0); cache.sig="0.000|0.000"; cache.quads=buildQuads(cache.P);
+      update(0,0,0);
+      return api;
+    }
+    const api={init,update,tick};
+    return api;
+  })();
+
+  const seamGap=document.getElementById("loopClose"),
         pkgSection=document.getElementById("packages");
-  const CRCIRC=628.318, CRTAIL=54;
-  const seam={drawn:0,closed:false,active:false};   // для бегущего тока в frame()
   function seamScroll(){
-    if(!coilRing||!pring) return;
+    if(!pring) return;
     const vh=window.innerHeight;
     const gapTop=seamGap.getBoundingClientRect().top;      // конец «что делаем»
     const pkgTop=pkgSection.getBoundingClientRect().top;   // начало «пакетов»
     const firstTier=ptiers.length?ptiers[0].getBoundingClientRect().top:pkgTop;
-    const coilP =smooth(vh*0.92, vh*0.40, gapTop);   // завиток: нить дочерчивает обод
-    const breakP=smooth(vh*0.60, vh*0.02, pkgTop);   // разрыв обода → слив в 0% (шире: «твоя петля» держится)
+    const coilP =smooth(vh*0.92, vh*0.40, gapTop);   // формирование: нить перекручивается в ленту
+    const breakP=smooth(vh*0.60, vh*0.02, pkgTop);   // передача: холодные пакеты тают, лента → кольцо
     const handP =smooth(vh*0.80, vh*0.42, firstTier);// хэндофф в #pring
-
-    const drain=smooth(0,0.72,breakP);               // слив завершается к «твой цикл 0%»
-    const drawn=clamp(coilP*(1-drain),0,1);
-    seam.drawn=drawn;
-    crfil.style.strokeDashoffset=CRCIRC*(1-drawn);
-    crtail.style.strokeDashoffset=CRTAIL*(1-coilP);
-    const isClosed=drawn>0.985 && breakP<0.02;
-    seam.closed=isClosed;
-    coilRing.classList.toggle("closed", isClosed);
-
-    // центр: идеал «петля замыкается» → «а теперь твоя петля» → «твой цикл 0%»
-    let word, cyc=false, sub="";
-    if(breakP<0.12){ word="петля<br>замыкается"; cyc=true; sub="и крутится сама"; }
-    else if(breakP<0.72){ word="а теперь —<br>твоя петля"; }
-    else { word="твой цикл"; sub="0% цикла"; }
-    if(crword.dataset.w!==word){ crword.innerHTML=word; crword.dataset.w=word; }
-    crcyc.style.opacity=cyc?"1":"0";
-    if(crsub.textContent!==sub) crsub.textContent=sub;
-    crsub.style.opacity=sub?"1":"0";
-
-    // позиция: центр экрана → доезжает ровно в место #pring, гаснет; #pring зеркально оживает
-    const pr=pring.getBoundingClientRect();
-    const cxMid=window.innerWidth/2, cyMid=vh*(WIDE?0.5:0.44), tt=smooth(0.15,0.9,handP);
-    const cx=cxMid+((pr.left+pr.width/2)-cxMid)*tt, cy=cyMid+((pr.top+pr.height/2)-cyMid)*tt;
-    const scale=1+((pr.width/(coilRing.offsetWidth||pr.width))-1)*tt;
-    coilRing.style.left=cx+"px"; coilRing.style.top=cy+"px";
-    coilRing.style.transform="translate(-50%,-50%) scale("+scale.toFixed(3)+")";
-
-    seam.active=coilP>0.02 && handP<0.98;
-    coilRing.style.opacity=(coilP>0.02?1:0)*(1-smooth(0.55,0.98,handP));
-    pring.style.opacity=smooth(0.4,0.9,handP);
+    Seam1.update(coilP,breakP,handP);
   }
   window.addEventListener("resize",seamScroll);
 
@@ -1266,15 +1519,8 @@ body.light .hint,body.light .credits{opacity:0}
     if(!pointer.active){pointer.x*=0.94;pointer.y*=0.94;}
     const breath=reduced?0.4:0.5+0.5*Math.sin(t*0.9);
     const intensity=narrate();
-    // шов №1: один непрерывный ток бежит по ободу кольца-кондуита
-    if(crdot){
-      if(seam.active){
-        const ang=seam.closed ? (-Math.PI/2 + t*1.1) : (-Math.PI/2 + seam.drawn*TAU);
-        crdot.setAttribute("cx",(120+100*Math.cos(ang)).toFixed(1));
-        crdot.setAttribute("cy",(120+100*Math.sin(ang)).toFixed(1));
-        crdot.setAttribute("r", seam.drawn>0.03?5:0);
-      } else crdot.setAttribute("r",0);
-    }
+    // шов №1: циркуляция пакетов по ленте Мёбиуса (модуль сам гейтится вне шва)
+    Seam1.tick(t);
     gateDim+=((gateState===1?0.15:1)-gateDim)*0.08;   // сцена гаснет под гейтом
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation="lighter";
@@ -1284,7 +1530,7 @@ body.light .hint,body.light .credits{opacity:0}
     ctx.globalCompositeOperation="source-over";
     requestAnimationFrame(frame);
   }
-  resize();readScroll();lightScroll();packagesScroll();updatePkg();requestAnimationFrame(frame);
+  resize();Seam1.init(pring);readScroll();lightScroll();packagesScroll();updatePkg();requestAnimationFrame(frame);
 })();
 </script>
 </body>
