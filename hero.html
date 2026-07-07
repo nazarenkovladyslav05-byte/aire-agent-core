@@ -271,19 +271,17 @@ body.light .hint,body.light .credits{opacity:0}
   z-index:14;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
   will-change:transform,opacity}
 .mobiusring canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-/* текст: весь блок (слово + cyc + sub) живёт по ЦЕНТРУ «глаза» ленты, компактной
-   flex-колонкой — не под лентой и не на дугах. */
+/* текст «глаза»: только слово + тонкая моно-статус-строка (этапы теперь = подписи-узлы
+   у пакетов на самой ленте, рисуются на canvas). Компактная flex-колонка по центру. */
 .mrcenter{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:.1rem;text-align:center;padding:0 14%}
-/* state-1: блок выше (word+cyc+sub) — приподнят в широкую зону «глаза»;
-   в state-2/3 cyc схлопнут (display) и блок центрируется как у #pring (стык хэндоффа) */
+  align-items:center;justify-content:center;gap:.22rem;text-align:center;padding:0 15%}
+/* state-1: блок чуть приподнят в широкую зону «глаза»;
+   в state-2/3 центрируется как у #pring (стык хэндоффа) */
 .mobiusring.st1 .mrcenter{transform:translateY(-2%)}
 .mrword{font-family:var(--disp);font-weight:800;letter-spacing:-.02em;line-height:1.05;
-  font-size:clamp(.92rem,2.2vw,1.3rem);color:var(--ztext);transition:opacity .35s ease}
-.mrcyc{font-family:var(--mono);font-size:.48rem;letter-spacing:.01em;color:var(--zdim);
-  max-width:32%;text-wrap:balance;line-height:1.4;transition:opacity .35s ease}
-.mrsub{font-family:var(--mono);font-size:.48rem;letter-spacing:.05em;text-transform:uppercase;
-  color:var(--zfaint);max-width:26%;text-wrap:balance;line-height:1.3;transition:opacity .35s ease}
+  font-size:clamp(1.05rem,2.4vw,1.5rem);color:var(--ztext);transition:opacity .35s ease}
+.mrsub{font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--zfaint);max-width:30%;text-wrap:balance;line-height:1.3;transition:opacity .35s ease}
 
 .tiercol{display:flex;flex-direction:column}
 .tier{padding:clamp(2.2rem,7vh,4.4rem) 0;border-bottom:1px solid var(--zline);
@@ -346,18 +344,17 @@ body.light .hint,body.light .credits{opacity:0}
   .tier.climax{margin-top:1.6rem}
   /* лента Мёбиуса на мобиле — центр экрана, чуть выше середины (низ под теги) */
   .mobiusring{width:min(74vw,270px);top:44%}
-  .mrword{font-size:.8rem;line-height:1.04}
-  .mrcyc{font-size:.4rem;line-height:1.2;max-width:34%}   /* этапы короткими строками внутри «глаза» 270px */
-  .mrsub{font-size:.38rem;letter-spacing:.05em;max-width:32%}  /* нижний ряд глаза уже — короче строка */
-  .mrcenter{gap:.06rem}
+  .mrword{font-size:1rem;line-height:1.04}
+  .mrsub{font-size:.42rem;letter-spacing:.12em;max-width:34%}  /* моно-статус глаза 270px */
+  .mrcenter{gap:.14rem}
   /* глаз 270px ниже — компактный блок state-1, подъём мягче чем на десктопе */
   .mobiusring.st1 .mrcenter{transform:translateY(-2%)}
 }
 @media (prefers-reduced-motion:reduce){
   .pring.closed>svg{animation:none}
   .tier,.pring .fil,.pring .pdot{transition:none}
-  /* лента: смена 3 текстовых фаз мгновенно, без fade (сама лента статична — гейт в JS) */
-  .mrword,.mrcyc,.mrsub{transition:none}
+  /* лента: смена текстовых фаз мгновенно, без fade (сама лента статична — гейт в JS) */
+  .mrword,.mrsub{transition:none}
 }
 </style>
 </head>
@@ -461,7 +458,6 @@ body.light .hint,body.light .credits{opacity:0}
   <canvas id="mobiusCanvas"></canvas>
   <div class="mrcenter">
     <div class="mrword" id="mrword">у ленты<br>нет шва</div>
-    <div class="mrcyc"  id="mrcyc">найти · продать · обслужить · учиться&nbsp;⟳</div>
     <div class="mrsub"  id="mrsub">крутится сама</div>
   </div>
 </div>
@@ -1245,7 +1241,10 @@ body.light .hint,body.light .credits{opacity:0}
     };
     /* палитра Graphite Current (строго; фон зоны светлый) */
     const STEEL=[58,114,196], VOLT=[37,99,235], FAINT=[150,168,196],
-          EMBER=[232,165,75], ICE=[158,196,255], COLDP=[29,79,196];
+          EMBER=[232,165,75], ICE=[158,196,255], COLDP=[29,79,196],
+          LABELCOLD=[84,99,122];        // steel-подпись узла (#54637a), холодная телеметрия
+    /* подписи-узлы у пакетов: i=0 — янтарный «ты», i=1..4 — холодные этапы петли */
+    const PLABEL=["ты","найти","продать","обслужить","учиться"];
     /* направление фейкового света (для чтения перекрута ленты) */
     const Ln=Math.hypot(0.35,0.6,0.72), LX=-0.35/Ln, LY=-0.6/Ln, LZ=0.72/Ln;
 
@@ -1257,7 +1256,7 @@ body.light .hint,body.light .credits{opacity:0}
     const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
     const UOFF=-Math.PI/2;         // старт ленты у ВЕРХА эллипса (стык с нитью сверху)
 
-    let ring,cv,ctx,mrword,mrcyc,mrsub,target;
+    let ring,cv,ctx,mrword,mrsub,target;
     let reduced=false, DPR=1, cssSize=300, sc=1, WIDE=true, active=false;
     let prog={coil:0,brk:0,hand:0};
     let cache={sig:null,quads:null,P:null};
@@ -1358,6 +1357,50 @@ body.light .hint,body.light .credits{opacity:0}
         drawPacket(u,ember,ember?emberA:coldA,P);
       }
     }
+    /* HUD-подписи узлов: моно-текст у каждого пакета, смещён РАДИАЛЬНО наружу от ленты
+       (на светлый фон, не на дугах). Дальние — тусклее (depth), ближние — читаемы и
+       рисуются последними (перекрывают дальние при коллизии на мобайле). */
+    function drawLabels(P){
+      // подписи-узлы — феномен state-1 («крутится сама»): уходят на входе в state-2,
+      // чтобы лента под заголовок пакетов была чистой (dots/транспорт живут дольше — не тут)
+      const lf=1-smooth(0.05,0.16,prog.brk);
+      if(lf<=0.01 || (coldA<=0.01 && emberA<=0.01)) return;
+      const fs=WIDE?8.6:7;                       // VB-размер (× sc → device px)
+      const pad=WIDE?6:7;                         // отступ за внешнюю кромку ленты (мобайл дальше — с полотна)
+      sctx.save();
+      sctx.font=fs+'px "IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
+      sctx.textAlign="center"; sctx.textBaseline="middle";
+      sctx.letterSpacing=(fs*0.09).toFixed(2)+"px";
+      const items=[];
+      for(let i=0;i<CFG.PACKETS;i++){
+        const ember=(i===0), baseA=ember?emberA:coldA;
+        if(baseA<=0.01) continue;
+        const u=packetU(i), p0=project(u,0,P);
+        // внешняя кромка ленты: берём тот край (v=±1), что дальше от центра «глаза»
+        const e1=project(u,1,P), e2=project(u,-1,P);
+        const d1=Math.hypot(e1.sx-CFG.CX,e1.sy-CFG.CY),
+              d2=Math.hypot(e2.sx-CFG.CX,e2.sy-CFG.CY);
+        const e=d1>=d2?e1:e2;
+        let dx=e.sx-CFG.CX, dy=e.sy-CFG.CY; const dl=Math.hypot(dx,dy)||1;
+        dx/=dl; dy/=dl;
+        // кламп в границы canvas (VB) по реальной ширине/высоте текста — против обрезки краем
+        const t=PLABEL[i], tw=sctx.measureText(t).width, hh=fs*0.5+2;
+        const lx=clamp(e.sx+dx*pad, tw/2+2, CFG.VB-tw/2-2),
+              ly=clamp(e.sy+dy*pad, hh,     CFG.VB-hh);
+        const depth=clamp(0.5-p0.Z/(2*P.zr),0,1); // near→1, far→0
+        items.push({t, lx, ly, col:ember?EMBER:LABELCOLD,
+                    a:baseA*lf*(0.3+0.7*depth), depth});
+      }
+      items.sort((m,n)=>m.depth-n.depth);          // дальние сначала → ближние поверх
+      // хало цвета фона зоны (--zbg #F6F8FB): подпись читается и на синем полотне/жгуте
+      sctx.lineJoin="round"; sctx.lineWidth=3;
+      for(const it of items){
+        sctx.strokeStyle=rgba([246,248,251],Math.min(1,it.a*1.5));
+        sctx.strokeText(it.t,it.lx,it.ly);
+        sctx.fillStyle=rgba(it.col,it.a); sctx.fillText(it.t,it.lx,it.ly);
+      }
+      sctx.restore();
+    }
     /* входящая янтарная нить сверху + горящий кончик, что вычерчивает ленту */
     function drawFormation(P){
       if(P.revealP>=TAU-0.02) return;
@@ -1399,6 +1442,7 @@ body.light .hint,body.light .credits{opacity:0}
       drawShimmer(P);
       drawPackets(P,true);    // ближние пакеты — над лентой
       drawFormation(P);
+      drawLabels(P);          // HUD-подписи узлов — поверх сцены (телеметрия)
     }
     function sizeCanvas(){
       WIDE=window.innerWidth>=760;
@@ -1425,13 +1469,12 @@ body.light .hint,body.light .credits{opacity:0}
       emberA=smooth(0.82,1,coilP)*(1-smooth(0.72,0.98,handP));
 
       // центр: «у ленты нет шва» → «а теперь — твоя лента» → «твой цикл 0%» (стык с #pring)
-      let word, cyc=false, sub="";
-      if(breakP<0.12){ word="у ленты<br>нет шва"; cyc=true; sub="крутится сама"; }
+      let word, s1=false, sub="";
+      if(breakP<0.12){ word="у ленты<br>нет шва"; s1=true; sub="крутится сама"; }
       else if(breakP<0.72){ word="а теперь —<br>твоя лента"; }
       else { word="твой цикл"; sub="0% цикла"; }
       if(mrword.dataset.w!==word){ mrword.innerHTML=word; mrword.dataset.w=word; }
-      mrcyc.style.display=cyc?"":"none";      // collapse: невидимый cyc не распирает центр-блок
-      ring.classList.toggle("st1",cyc);
+      ring.classList.toggle("st1",s1);        // state-1: блок приподнят в широкий «глаз»
       if(mrsub.textContent!==sub) mrsub.textContent=sub;
       mrsub.style.opacity=sub?"1":"0";
 
@@ -1468,7 +1511,6 @@ body.light .hint,body.light .credits{opacity:0}
       if(!ring||!cv) return null;
       sctx=cv.getContext("2d");
       mrword=document.getElementById("mrword");
-      mrcyc =document.getElementById("mrcyc");
       mrsub =document.getElementById("mrsub");
       target=targetEl||null;
       reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
